@@ -1,0 +1,52 @@
+# Diretórios de build
+target/
+build/
+dist/
+out/
+bin/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+*.iml
+*.ipr
+*.iws
+
+# Maven
+pom.xml.*
+release.properties
+
+# Tomcat
+*.war
+*.ear
+
+# Derby
+derby.log
+*.dat
+*.lck
+*.lobs
+
+# Sistemas
+.DS_Store
+Thumbs.db
+
+# Logs e temporários
+*.log
+logs/
+*.tmp
+*.swp
+*~
+
+# Configurações locais
+*.properties
+*.prefs
+.env
+config/
+
+# IDEs
+.idea/
+.settings/
+.classpath
+.project
