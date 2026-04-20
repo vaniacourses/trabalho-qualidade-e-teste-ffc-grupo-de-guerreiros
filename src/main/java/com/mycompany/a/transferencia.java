@@ -1,10 +1,18 @@
 package com.mycompany.a;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "transferencia", urlPatterns = {"/transferencia"})
 public class transferencia extends HttpServlet {
@@ -12,6 +20,24 @@ public class transferencia extends HttpServlet {
     private final String URL  = "jdbc:derby://localhost:1527/trabalho";
     private final String USER = "eri";
     private final String PASS = "eri";
+
+    public String validarTransferencia(double valor, String numDestino, String numOrigem, double saldoOrigem, boolean destinoExiste) {
+        if (valor <= 0 || numDestino == null || numDestino.isBlank()) {
+            return "Valor ou conta inválidos.";
+        }
+        if (numDestino.equals(numOrigem)) {
+            return "Não é possível transferir para a própria conta.";
+        }
+        if (valor > saldoOrigem) {
+            return "Saldo insuficiente.";
+        }
+        if (!destinoExiste) {
+            return "Conta destino não encontrada.";
+        }
+        return "OK";
+    }
+
+    
 
     /* ---------- TELA (GET) ---------- */
     @Override
