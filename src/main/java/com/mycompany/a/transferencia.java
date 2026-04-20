@@ -159,11 +159,11 @@ public class transferencia extends HttpServlet {
             ses.setAttribute("msgTransfer", "Transferência realizada com sucesso!");
 
         } catch (SQLException e) {
-            if (con != null) try { con.rollback(); } catch (Exception ig) {}
+            if (con != null) try { con.rollback(); } catch (SQLException ig) {}
             e.printStackTrace();
             ses.setAttribute("erroTransfer", "Erro ao transferir: " + e.getMessage());
         } finally {
-            if (con != null) try { con.close(); } catch (Exception ig) {}
+            if (con != null) try { con.close(); } catch (SQLException ig) {}
             resp.sendRedirect(redirectURL);
         }
     }
