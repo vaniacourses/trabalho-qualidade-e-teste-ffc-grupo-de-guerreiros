@@ -1,10 +1,7 @@
-package com.mycompany.a;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import com.mycompany.a.deposito;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 
 public class DepositoTest {
