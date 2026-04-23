@@ -13,14 +13,10 @@ public class deposito extends HttpServlet {
     private final String USER = "eri";
     private final String PASS = "eri";
 
-    // NOVO MÉTODO: Isolando a regra de negócio do Depósito para o JUnit
     public String validarDeposito(double valorDeposito) {
-        // O banco não pode aceitar depósitos zerados ou negativos
         if (valorDeposito <= 0) {
             return "Valor inválido.";
         }
-        
-        // Se o valor for positivo, a transação é liberada
         return "OK";
     }
 
