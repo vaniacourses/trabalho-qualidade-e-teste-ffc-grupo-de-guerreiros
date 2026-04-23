@@ -70,6 +70,18 @@ public class saque extends HttpServlet {
             return;
         }
 
+        if (valor > 10000) {
+            sessao.setAttribute("msgSaque", "Limite máximo por saque excedido.");
+            resp.sendRedirect("saque");
+            return;
+        }
+
+        if (valor % 10 != 0) {
+            sessao.setAttribute("msgSaque", "Valor deve ser múltiplo de 10.");
+            resp.sendRedirect("saque");
+            return;
+        }
+
         int idConta = (int) sessao.getAttribute("idConta");
 
         try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
@@ -82,7 +94,7 @@ public class saque extends HttpServlet {
             double saldoAtual = 0;
             if (rs.next()) saldoAtual = rs.getDouble("saldo");
 
-            if (saldoAtual < valor) {
+            if (saldoAtual <= 0 || saldoAtual < valor) {
                 sessao.setAttribute("msgSaque", "Saldo insuficiente.");
                 resp.sendRedirect("saque");
                 return;
