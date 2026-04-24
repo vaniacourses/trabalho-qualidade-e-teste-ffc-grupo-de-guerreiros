@@ -22,21 +22,14 @@ public class SaqueTest {
     @Test
     public void testSaqueSaldoInsuficiente() {
         saque sacado = new saque();
-        String resultado = sacado.validaSaque(200.0, 100.0);
+        String resultado = sacado.validaSaque(100.0, 200.0);
         assertEquals("Saldo insuficiente.", resultado);
     }
 
     @Test
     public void testSaqueLimite() {
         saque sacado = new saque();
-        String resultado = sacado.validaSaque(500.0, 12000.0);
+        String resultado = sacado.validaSaque(20500.0, 12000.0);
         assertEquals("Limite máximo por saque excedido.", resultado);
-    }
-
-    @Test
-    public void testSaqueHorario() {
-        saque sacado = new saque();
-        String resultado = sacado.validaSaque(500.0, 12000.0);
-        assertEquals("Saques permitidos apenas entre 06h e 22h.", resultado);
     }
 }

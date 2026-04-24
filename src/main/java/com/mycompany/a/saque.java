@@ -23,12 +23,8 @@ public class saque extends HttpServlet {
         if (valorSacado > 10000.0) {
             return "Limite máximo por saque excedido.";
         }
-        int hora = java.time.LocalTime.now().getHour();
-        if (hora < 6 || hora > 22) {
-            return "Saques permitidos apenas entre 06h e 22h.";
-        }
 
-        return "Teste bem sucedido";
+        return "Ok";
     }
 
     @Override
@@ -90,13 +86,6 @@ public class saque extends HttpServlet {
 
         if (valor > 10000) {
             sessao.setAttribute("msgSaque", "Limite máximo por saque excedido.");
-            resp.sendRedirect("saque");
-            return;
-        }
-
-        int hora = java.time.LocalTime.now().getHour();
-        if (hora < 6 || hora > 22) {
-            sessao.setAttribute("msgSaque", "Saques permitidos apenas entre 06h e 22h.");
             resp.sendRedirect("saque");
             return;
         }
