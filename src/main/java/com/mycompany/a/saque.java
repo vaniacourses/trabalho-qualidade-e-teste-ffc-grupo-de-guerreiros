@@ -13,6 +13,24 @@ public class saque extends HttpServlet {
     private final String USER = "eri";
     private final String PASS = "eri";
 
+    public String validaSaque(double valorConta, double valorSacado) {
+        if (valorSacado <= 0) {
+            return "Valor Inválido.";
+        }
+        if (valorSacado > valorConta) {
+            return "Saldo insuficiente.";
+        }
+        if (valorSacado > 10000.0) {
+            return "Limite máximo por saque excedido.";
+        }
+        int hora = java.time.LocalTime.now().getHour();
+        if (hora < 6 || hora > 22) {
+            return "Saques permitidos apenas entre 06h e 22h.";
+        }
+
+        return "Teste bem sucedido";
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -76,8 +94,9 @@ public class saque extends HttpServlet {
             return;
         }
 
-        if (valor % 10 != 0) {
-            sessao.setAttribute("msgSaque", "Valor deve ser múltiplo de 10.");
+        int hora = java.time.LocalTime.now().getHour();
+        if (hora < 6 || hora > 22) {
+            sessao.setAttribute("msgSaque", "Saques permitidos apenas entre 06h e 22h.");
             resp.sendRedirect("saque");
             return;
         }
