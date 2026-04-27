@@ -26,9 +26,6 @@ public class Investimento extends HttpServlet {
     }
 
     public String validarOperacao(String op, BigDecimal valor, BigDecimal saldoConta, BigDecimal valorInvestido) {
-        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
-            return "Valor inválido.";
-        }
         if (!"investir".equals(op) && !"retirar".equals(op)) {
             return "Operação inválida.";
         }
