@@ -11,6 +11,13 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "cadastro", urlPatterns = {"/cadastro"})
 public class Cadastro extends HttpServlet {
 
+    public String validarCadastro(String nome, String email, String senha) {
+        if (nome == null || nome.isBlank()) return "Nome inválido.";
+        if (email == null || email.isBlank()) return "Email inválido.";
+        if (senha == null || senha.isBlank()) return "Senha inválida.";
+        return "OK";
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -26,6 +33,13 @@ public class Cadastro extends HttpServlet {
         String nome = request.getParameter("nome");
         String email = request.getParameter("email");
         String senha = request.getParameter("senha");
+
+        String erro = validarCadastro(nome, email, senha);
+        if (!"OK".equals(erro)) {
+            request.setAttribute("erroCadastro", erro);
+            request.getRequestDispatcher("/WEB-INF/cadastro.jsp").forward(request, response);
+            return;
+        }
 
         try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             // Inserir usuário
