@@ -15,11 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "transferencia", urlPatterns = {"/transferencia"})
-public class transferencia extends HttpServlet {
-
-    private final String URL  = "jdbc:derby://localhost:1527/trabalho";
-    private final String USER = "eri";
-    private final String PASS = "eri";
+public class Transferencia extends HttpServlet {
 
     public String validarTransferencia(double valor, String numDestino, String numOrigem, double saldoOrigem, boolean destinoExiste) {
         if (valor <= 0 || numDestino == null || numDestino.isBlank()) {
@@ -55,7 +51,7 @@ public class transferencia extends HttpServlet {
         double saldo = 0;
         String numero = "";
 
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             PreparedStatement ps = con.prepareStatement(
                     "SELECT id, numero, saldo FROM conta WHERE usuario_id = ?");
             ps.setInt(1, idUsuario);
@@ -103,7 +99,7 @@ public class transferencia extends HttpServlet {
 
         Connection con = null;
         try {
-            con = DriverManager.getConnection(URL, USER, PASS);
+            con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword());
 
             PreparedStatement psOrig = con.prepareStatement(
                 "SELECT saldo, numero FROM conta WHERE id = ?");

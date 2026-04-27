@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
-<%@ page import="com.mycompany.a.extrato.Transacao" %>
+<%@ page import="com.mycompany.a.Extrato.Transacao" %>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>

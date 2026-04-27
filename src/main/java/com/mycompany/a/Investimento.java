@@ -12,11 +12,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet(name = "investimento", urlPatterns = {"/investimento"})
-public class investimento extends HttpServlet {
+public class Investimento extends HttpServlet {
 
-    private final String URL  = "jdbc:derby://localhost:1527/trabalho";
-    private final String USER = "eri";
-    private final String PASS = "eri";
+    private static final double TAXA_JUROS_POR_MINUTO = 1.01;
 
     /* ---------- UTIL Lazy‑Update ---------- */
     private BigDecimal lazyUpdate(Connection con, int userId) throws SQLException {
@@ -44,7 +42,7 @@ public class investimento extends HttpServlet {
 
         long minutos = Duration.between(ultima.toInstant(), Instant.now()).toMinutes();
         if (minutos > 0) {
-            double fator = Math.pow(1.01, minutos);          // 1 % ao minuto
+            double fator = Math.pow(TAXA_JUROS_POR_MINUTO, minutos);          // 1 % ao minuto
             valor = valor.multiply(BigDecimal.valueOf(fator))
                          .setScale(2, RoundingMode.HALF_UP);
 
@@ -71,7 +69,7 @@ public class investimento extends HttpServlet {
         int userId = (int) ses.getAttribute("idUsuario");
 
         BigDecimal valorAtual = BigDecimal.ZERO;
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             valorAtual = lazyUpdate(con, userId);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -98,7 +96,7 @@ public class investimento extends HttpServlet {
         try { valor = new BigDecimal(req.getParameter("valor")).setScale(2); }
         catch (Exception e){ ses.setAttribute("erroInv","Valor inválido."); resp.sendRedirect("investimento"); return; }
 
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             con.setAutoCommit(false);
 
             /* Lazy‑update + busca saldo conta */

@@ -9,11 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet(name = "extrato", urlPatterns = {"/extrato"})
-public class extrato extends HttpServlet {
-
-    private final String URL = "jdbc:derby://localhost:1527/trabalho";
-    private final String USER = "eri";
-    private final String PASS = "eri";
+public class Extrato extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -29,7 +25,7 @@ public class extrato extends HttpServlet {
         int idConta = 0;
 
         // Obter o ID da conta
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             PreparedStatement ps = con.prepareStatement("SELECT id FROM conta WHERE usuario_id = ?");
             ps.setInt(1, idUsuario);
             ResultSet rs = ps.executeQuery();
@@ -44,7 +40,7 @@ public class extrato extends HttpServlet {
 
         // Pega transações
         List<Transacao> transacoes = new ArrayList<>();
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             String sql = "SELECT * FROM transacao WHERE conta_origem = ? OR conta_destino = ? ORDER BY data DESC";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setInt(1, idConta);

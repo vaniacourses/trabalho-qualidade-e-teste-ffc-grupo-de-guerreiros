@@ -7,7 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet(name = "saldo", urlPatterns = {"/saldo"})
-public class saldo extends HttpServlet {
+public class Saldo extends HttpServlet {
 
     String url = "jdbc:derby://localhost:1527/trabalho";
     String usuario = "eri";

@@ -1,13 +1,13 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
-import com.mycompany.a.deposito;
+import com.mycompany.a.Deposito;
 
 
 public class DepositoTest {
       @Test
     public void testDepositoComSucesso() {
-        deposito operacao = new deposito();
+        Deposito operacao = new Deposito();
         
         // Simulação: Usuário tenta depositar R$ 150.00
         String resultado = operacao.validarDeposito(150.0);
@@ -18,7 +18,7 @@ public class DepositoTest {
 
     @Test
     public void testDepositoValorNegativo() {
-        deposito operacao = new deposito();
+        Deposito operacao = new Deposito();
         
         // Simulação: Usuário tenta depositar um valor negativo (R$ -100.00)
         String resultado = operacao.validarDeposito(-100.0);
@@ -29,7 +29,7 @@ public class DepositoTest {
 
     @Test
     public void testDepositoValorZero() {
-        deposito operacao = new deposito();
+        Deposito operacao = new Deposito();
         
         // Simulação: Usuário tenta depositar R$ 0.00
         String resultado = operacao.validarDeposito(0.0);
