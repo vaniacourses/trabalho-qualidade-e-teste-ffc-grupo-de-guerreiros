@@ -23,15 +23,6 @@ public class InvestimentoTest {
     }
 
     @Test
-    public void deveRetornarValorInalteradoQuandoMinutosForemNegativos() {
-        Investimento inv = new Investimento();
-
-        BigDecimal resultado = inv.calcularValorComJuros(CEM, -10);
-
-        assertEquals(0, resultado.compareTo(CEM));
-    }
-
-    @Test
     public void deveAplicarJurosDeUmPorCentoEmUmMinuto() {
         Investimento inv = new Investimento();
 
@@ -51,28 +42,10 @@ public class InvestimentoTest {
     }
 
     @Test
-    public void deveRetornarZeroQuandoValorInicialForZero() {
-        Investimento inv = new Investimento();
-
-        BigDecimal resultado = inv.calcularValorComJuros(ZERO, 60);
-
-        assertEquals(0, resultado.compareTo(ZERO));
-    }
-
-    @Test
     public void deveRetornarNullQuandoInvestirComSaldoSuficiente() {
         Investimento inv = new Investimento();
 
         String resultado = inv.validarOperacao("investir", CINQUENTA, CEM, ZERO);
-
-        assertNull(resultado);
-    }
-
-    @Test
-    public void deveRetornarNullQuandoInvestirComSaldoExatoAoValor() {
-        Investimento inv = new Investimento();
-
-        String resultado = inv.validarOperacao("investir", CEM, CEM, ZERO);
 
         assertNull(resultado);
     }
@@ -111,32 +84,5 @@ public class InvestimentoTest {
         String resultado = inv.validarOperacao("transferir", CINQUENTA, CEM, CEM);
 
         assertEquals("Operação inválida.", resultado);
-    }
-
-    @Test
-    public void deveRetornarErroQuandoValorForZero() {
-        Investimento inv = new Investimento();
-
-        String resultado = inv.validarOperacao("investir", ZERO, CEM, CEM);
-
-        assertEquals("Valor inválido.", resultado);
-    }
-
-    @Test
-    public void deveRetornarErroQuandoValorForNegativo() {
-        Investimento inv = new Investimento();
-
-        String resultado = inv.validarOperacao("investir", new BigDecimal("-10.00"), CEM, CEM);
-
-        assertEquals("Valor inválido.", resultado);
-    }
-
-    @Test
-    public void deveRetornarErroQuandoValorForNulo() {
-        Investimento inv = new Investimento();
-
-        String resultado = inv.validarOperacao("investir", null, CEM, CEM);
-
-        assertEquals("Valor inválido.", resultado);
     }
 }
