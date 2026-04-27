@@ -95,7 +95,27 @@ A aplicação é organizada em cinco domínios funcionais:
 mvn test
 ```
 
-Todos os 5 domínios são cobertos por testes unitários JUnit 5.
+### Cobertura unitária
+
+- **Login** (`LoginService.autenticar`)
+- **Saque** (`Saque.validaSaque`)
+- **Depósito** (`Deposito.validarDeposito`)
+- **Transferência** (`Transferencia.validarTransferencia`)
+- **Investimento** (`Investimento.calcularValorComJuros` e `validarOperacao`)
+- **Cadastro** (`Cadastro.validarCadastro`)
+- **Extrato** (`Extrato.corPorTipo` e `descricaoPorTipo`)
+
+### Classes intencionalmente não testadas unitariamente
+
+| Classe | Motivo |
+|---|---|
+| `Saldo` | Apenas consulta SQL — sem regra de negócio fora do banco. Cobertura via integração (entrega 2). |
+| `UsuarioDAO` | Acesso direto ao banco. Cobertura via integração de Login (entrega 2). |
+| `Menu` | Apenas forward para JSP. Sem lógica testável. |
+| `Painel` | Controle de sessão e logout. Dependência forte em `HttpSession`. |
+| `Usuario` | POJO (model com getters/setters). |
+
+Decisões de cobertura registradas para evitar interpretação como "esquecimento" durante revisão.
 
 ## Documentação adicional
 
