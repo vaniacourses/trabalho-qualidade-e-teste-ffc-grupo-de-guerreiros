@@ -1,0 +1,52 @@
+name: "Bug report"
+description: "Reportar um defeito encontrado em algum domínio do sistema bancário."
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: dominio
+    attributes:
+      label: "Domínio"
+      description: "Selecione o domínio funcional onde o bug ocorreu."
+      options:
+        - Transferência
+        - Saque
+        - Investimento
+        - Depósito
+        - Login
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: "Passos para reproduzir"
+      description: "Descreva, passo a passo, como reproduzir o problema."
+      placeholder: |
+        1. Acessar ...
+        2. Preencher ...
+        3. Clicar em ...
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: "Comportamento esperado"
+      description: "O que deveria acontecer ao seguir os passos acima?"
+    validations:
+      required: true
+  - type: textarea
+    id: atual
+    attributes:
+      label: "Comportamento atual"
+      description: "O que de fato está acontecendo?"
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: "Ambiente (versão Java, servidor)"
+      description: "Ex.: Java 11.0.20, Glassfish 7.0.10 / Tomcat 10.1.18, macOS 14.4."
+      placeholder: "Java 11, Glassfish 7"
+    validations:
+      required: true

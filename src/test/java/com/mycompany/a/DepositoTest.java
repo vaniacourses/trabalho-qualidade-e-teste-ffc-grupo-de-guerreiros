@@ -1,28 +1,27 @@
-package com.mycompany.a;
-
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.BeforeAll;
+import com.mycompany.a.Deposito;
+import org.junit.jupiter.api.BeforeEach;
 
 
 public class DepositoTest {
 
-    deposito operacao;
+    Deposito operacao;
 
-    @BeforeAll
+    @BeforeEach
     public void iniciar(){
-        operacao = new deposito();
+        operacao = new Deposito();
     }
 
     @Test
-    public void testDepositoComSucesso() {
+    public void testDepositoComSucesso() {    
         String resultado = operacao.validarDeposito(150.0);
         assertEquals("OK", resultado);
     }
 
     @Test
     public void testDepositoValorNegativo() {
+
         String resultado = operacao.validarDeposito(-100.0);
         assertEquals("Valor inválido.", resultado);
     }

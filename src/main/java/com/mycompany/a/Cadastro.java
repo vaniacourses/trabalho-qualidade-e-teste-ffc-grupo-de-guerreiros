@@ -9,12 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "cadastro", urlPatterns = {"/cadastro"})
-public class cadastro extends HttpServlet {
+public class Cadastro extends HttpServlet {
 
-    String url = "jdbc:derby://localhost:1527/trabalho";
-    String usuarioBD = "eri";
-    String senhaBD = "eri";
-    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -31,7 +27,7 @@ public class cadastro extends HttpServlet {
         String email = request.getParameter("email");
         String senha = request.getParameter("senha");
 
-        try (Connection con = DriverManager.getConnection(url, usuarioBD, senhaBD)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             // Inserir usuário
             String sqlUsuario = "INSERT INTO usuario (nome, email, senha) VALUES (?, ?, ?)";
             PreparedStatement pst = con.prepareStatement(sqlUsuario, Statement.RETURN_GENERATED_KEYS);

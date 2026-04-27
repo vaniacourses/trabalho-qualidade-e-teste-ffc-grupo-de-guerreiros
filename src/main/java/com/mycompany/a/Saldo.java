@@ -7,11 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet(name = "saldo", urlPatterns = {"/saldo"})
-public class saldo extends HttpServlet {
-
-    String url = "jdbc:derby://localhost:1527/trabalho";
-    String usuario = "eri";
-    String senhaBD = "eri";
+public class Saldo extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -27,7 +23,7 @@ public class saldo extends HttpServlet {
         double saldo = 0;
         String numeroConta = "";
 
-        try (Connection con = DriverManager.getConnection(url, usuario, senhaBD)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             String sql = "SELECT numero, saldo FROM conta WHERE usuario_id = ?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, idUsuario);

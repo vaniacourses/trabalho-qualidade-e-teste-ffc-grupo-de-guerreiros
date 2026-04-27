@@ -1,7 +1,6 @@
 package com.mycompany.a;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.*;
@@ -15,9 +14,29 @@ import jakarta.servlet.http.*;
 @WebServlet(name = "investimento", urlPatterns = {"/investimento"})
 public class Investimento extends HttpServlet {
 
-    private final String URL  = "jdbc:derby://localhost:1527/trabalho";
-    private final String USER = "eri";
-    private final String PASS = "eri";
+    private static final double TAXA_JUROS_POR_MINUTO = 1.01;
+
+    public BigDecimal calcularValorComJuros(BigDecimal valorAtual, long minutos) {
+        if (minutos <= 0) {
+            return valorAtual;
+        }
+        double fator = Math.pow(TAXA_JUROS_POR_MINUTO, minutos);
+        return valorAtual.multiply(BigDecimal.valueOf(fator))
+                         .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public String validarOperacao(String op, BigDecimal valor, BigDecimal saldoConta, BigDecimal valorInvestido) {
+        if (!"investir".equals(op) && !"retirar".equals(op)) {
+            return "Operação inválida.";
+        }
+        if ("investir".equals(op) && saldoConta.compareTo(valor) < 0) {
+            return "Saldo insuficiente na conta.";
+        }
+        if ("retirar".equals(op) && valorInvestido.compareTo(valor) < 0) {
+            return "Valor maior que o investido.";
+        }
+        return null;
+    }
 
     /* ---------- UTIL Lazy‑Update ---------- */
     private BigDecimal lazyUpdate(Connection con, int userId) throws SQLException {
@@ -45,9 +64,7 @@ public class Investimento extends HttpServlet {
 
         long minutos = Duration.between(ultima.toInstant(), Instant.now()).toMinutes();
         if (minutos > 0) {
-            double fator = Math.pow(1.01, minutos);          // 1 % ao minuto
-            valor = valor.multiply(BigDecimal.valueOf(fator))
-                         .setScale(2, RoundingMode.HALF_UP);
+            valor = calcularValorComJuros(valor, minutos);
 
             PreparedStatement psUp = con.prepareStatement(
                 "UPDATE investimento SET valor = ?, ultima_att = ? WHERE id = ?");
@@ -72,54 +89,15 @@ public class Investimento extends HttpServlet {
         int userId = (int) ses.getAttribute("idUsuario");
 
         BigDecimal valorAtual = BigDecimal.ZERO;
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             valorAtual = lazyUpdate(con, userId);
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        /* ---------- HTML ---------- */
-        resp.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        out.println("<!DOCTYPE html><html lang='pt-br'><head>");
-        out.println("<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>");
-        out.println("<title>Investimento – Banco Campos</title>");
-        out.println("<style>");
-        out.println(":root{--bg:#0b1c2c;--accent:#d4af37;--card:#13273a;--text:#fff;--ok:#2ecc71;--erro:#e74c3c}");
-        out.println("*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}");
-        out.println("body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;padding:40px}");
-        out.println(".card{background:var(--card);padding:40px 32px;border-radius:10px;box-shadow:0 10px 18px rgba(0,0,0,.4);width:90%;max-width:460px;text-align:center}");
-        out.println("h2{color:var(--accent);margin-bottom:12px}");
-        out.println(".valor{font-size:28px;font-weight:bold;color:var(--accent);margin-bottom:20px}");
-        out.println("form{margin:14px 0}");
-        out.println("input{padding:10px;border-radius:6px;border:none;width:160px;margin-bottom:8px}");
-        out.println(".btn{padding:10px 24px;border:none;border-radius:6px;font-weight:bold;cursor:pointer}");
-        out.println(".investir{background:var(--accent);color:#000}");
-        out.println(".retirar{background:crimson;color:#fff;margin-left:8px}");
-        out.println(".btn:hover{filter:brightness(1.1)}");
-        out.println(".msg{margin-top:12px;font-weight:600}");
-        out.println("a.link{display:inline-block;margin-top:25px;color:var(--accent);text-decoration:none}");
-        out.println("</style></head><body>");
-
-        out.println("<div class='card'>");
-        out.println("<h2>Poupança Campos</h2>");
-        out.println("<div class='valor'>R$ " + valorAtual.toPlainString() + "</div>");
-
-        String ok  = (String) ses.getAttribute("msgInv");
-        String err = (String) ses.getAttribute("erroInv");
-        if (ok  != null){ out.println("<div class='msg' style='color:var(--ok)'>"+ok+"</div>");  ses.removeAttribute("msgInv"); }
-        if (err != null){ out.println("<div class='msg' style='color:var(--erro)'>"+err+"</div>");ses.removeAttribute("erroInv"); }
-
-        /* formulários separados para Investir e Retirar */
-        out.println("<form method='post' action='investimento'>");
-        out.println("<input type='number' step='0.01' name='valor' placeholder='Valor' required><br>");
-        out.println("<button class='btn investir' name='op' value='investir'>Investir</button>");
-        out.println("<button class='btn retirar' name='op' value='retirar'>Retirar</button>");
-        out.println("</form>");
-
-        out.println("<a class='link' href='painel'>&larr; Voltar ao Painel</a>");
-        out.println("</div></body></html>");
+        // Passa o valor atual para o JSP
+        req.setAttribute("valorAtual", valorAtual);
+        req.getRequestDispatcher("/WEB-INF/investimento.jsp").forward(req, resp);
     }
 
     /* ---------- POST ---------- */
@@ -138,7 +116,7 @@ public class Investimento extends HttpServlet {
         try { valor = new BigDecimal(req.getParameter("valor")).setScale(2); }
         catch (Exception e){ ses.setAttribute("erroInv","Valor inválido."); resp.sendRedirect("investimento"); return; }
 
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             con.setAutoCommit(false);
 
             /* Lazy‑update + busca saldo conta */
@@ -152,12 +130,14 @@ public class Investimento extends HttpServlet {
             int idConta = rsC.getInt("id");
             BigDecimal saldoConta = rsC.getBigDecimal("saldo");
 
-            if ("investir".equals(op)) {
-                if (saldoConta.compareTo(valor) < 0) {
-                    ses.setAttribute("erroInv", "Saldo insuficiente na conta.");
-                    resp.sendRedirect("investimento"); return;
-                }
+            String erro = validarOperacao(op, valor, saldoConta, valorInvest);
+            if (erro != null) {
+                ses.setAttribute("erroInv", erro);
+                resp.sendRedirect("investimento");
+                return;
+            }
 
+            if ("investir".equals(op)) {
                 // debita conta
                 PreparedStatement deb = con.prepareStatement(
                     "UPDATE conta SET saldo = saldo - ? WHERE id = ?");
@@ -177,11 +157,6 @@ public class Investimento extends HttpServlet {
                 ses.setAttribute("msgInv", "Investimento realizado com sucesso!");
 
             } else if ("retirar".equals(op)) {
-                if (valorInvest.compareTo(valor) < 0) {
-                    ses.setAttribute("erroInv", "Valor maior que o investido.");
-                    resp.sendRedirect("investimento"); return;
-                }
-
                 // credita conta
                 PreparedStatement cred = con.prepareStatement(
                     "UPDATE conta SET saldo = saldo + ? WHERE id = ?");

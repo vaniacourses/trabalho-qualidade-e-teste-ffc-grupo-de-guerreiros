@@ -7,11 +7,23 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet(name = "saque", urlPatterns = {"/saque"})
-public class saque extends HttpServlet {
+public class Saque extends HttpServlet {
 
-    private final String URL  = "jdbc:derby://localhost:1527/trabalho";
-    private final String USER = "eri";
-    private final String PASS = "eri";
+    private static final double LIMITE_SAQUE_DIARIO = 10000.0;
+
+    public String validaSaque(double valorConta, double valorSacado) {
+        if (valorSacado <= 0) {
+            return "Valor Inválido.";
+        }
+        if (valorSacado > valorConta) {
+            return "Saldo insuficiente.";
+        }
+        if (valorSacado > LIMITE_SAQUE_DIARIO) {
+            return "Limite máximo por saque excedido.";
+        }
+
+        return "Ok";
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -27,7 +39,7 @@ public class saque extends HttpServlet {
         double saldo = 0;
         String conta = "";
 
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             PreparedStatement ps = con.prepareStatement(
                 "SELECT id, numero, saldo FROM conta WHERE usuario_id = ?");
             ps.setInt(1, idUsuario);
@@ -70,9 +82,15 @@ public class saque extends HttpServlet {
             return;
         }
 
+        if (valor > LIMITE_SAQUE_DIARIO) {
+            sessao.setAttribute("msgSaque", "Limite máximo por saque excedido.");
+            resp.sendRedirect("saque");
+            return;
+        }
+
         int idConta = (int) sessao.getAttribute("idConta");
 
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             con.setAutoCommit(false);
 
             // Verifica saldo
@@ -82,7 +100,7 @@ public class saque extends HttpServlet {
             double saldoAtual = 0;
             if (rs.next()) saldoAtual = rs.getDouble("saldo");
 
-            if (saldoAtual < valor) {
+            if (saldoAtual <= 0 || saldoAtual < valor) {
                 sessao.setAttribute("msgSaque", "Saldo insuficiente.");
                 resp.sendRedirect("saque");
                 return;
