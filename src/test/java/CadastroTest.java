@@ -9,7 +9,7 @@ public class CadastroTest {
     public void deveRetornarOkQuandoTodosOsCamposEstaoPreenchidos() {
         Cadastro cad = new Cadastro();
 
-        String resultado = cad.validarCadastro("João", "joao@email.com", "123456");
+        String resultado = cad.validarCadastro("João", "joao@email.com", "12345678");
 
         assertEquals("OK", resultado);
     }

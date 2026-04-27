@@ -2,6 +2,7 @@ package com.mycompany.a;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.regex.Pattern;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,10 +12,16 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "cadastro", urlPatterns = {"/cadastro"})
 public class Cadastro extends HttpServlet {
 
+    private static final Pattern EMAIL_REGEX =
+        Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+    private static final int SENHA_MIN = 8;
+
     public String validarCadastro(String nome, String email, String senha) {
         if (nome == null || nome.isBlank()) return "Nome inválido.";
         if (email == null || email.isBlank()) return "Email inválido.";
+        if (!EMAIL_REGEX.matcher(email).matches()) return "Formato de email inválido.";
         if (senha == null || senha.isBlank()) return "Senha inválida.";
+        if (senha.length() < SENHA_MIN) return "Senha deve ter no mínimo " + SENHA_MIN + " caracteres.";
         return "OK";
     }
 
