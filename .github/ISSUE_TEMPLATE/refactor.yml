@@ -1,0 +1,40 @@
+name: "Sugestão de refactor"
+description: "Registrar uma oportunidade de refactor sem corrigir agora."
+title: "[refactor] "
+labels: ["refactor"]
+body:
+  - type: input
+    id: arquivo
+    attributes:
+      label: "Arquivo e linha (aproximada)"
+      description: "Caminho do arquivo e número de linha aproximado onde o problema foi observado."
+      placeholder: "src/main/java/com/mycompany/a/Transferencia.java:123"
+    validations:
+      required: true
+  - type: dropdown
+    id: categoria
+    attributes:
+      label: "Categoria"
+      description: "Selecione a categoria principal do refactor sugerido."
+      options:
+        - Legibilidade
+        - Duplicação
+        - Magic numbers
+        - Mistura de camadas
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    id: problema
+    attributes:
+      label: "Descrição do problema"
+      description: "Explique por que o trecho atual é problemático."
+    validations:
+      required: true
+  - type: textarea
+    id: sugestao
+    attributes:
+      label: "Sugestão (opcional, sem corrigir agora)"
+      description: "Se já tiver uma ideia de como resolver, descreva aqui. Não é obrigatório."
+    validations:
+      required: false
