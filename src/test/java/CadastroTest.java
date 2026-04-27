@@ -49,4 +49,40 @@ public class CadastroTest {
 
         assertEquals("Nome inválido.", resultado);
     }
+
+    @Test
+    public void deveRetornarErroDeFormatoQuandoEmailNaoTemArroba() {
+        Cadastro cad = new Cadastro();
+
+        String resultado = cad.validarCadastro("João", "joaoemail.com", "12345678");
+
+        assertEquals("Formato de email inválido.", resultado);
+    }
+
+    @Test
+    public void deveRetornarErroDeFormatoQuandoEmailNaoTemDominio() {
+        Cadastro cad = new Cadastro();
+
+        String resultado = cad.validarCadastro("João", "joao@", "12345678");
+
+        assertEquals("Formato de email inválido.", resultado);
+    }
+
+    @Test
+    public void deveRetornarErroDeFormatoQuandoEmailNaoTemTld() {
+        Cadastro cad = new Cadastro();
+
+        String resultado = cad.validarCadastro("João", "joao@email", "12345678");
+
+        assertEquals("Formato de email inválido.", resultado);
+    }
+
+    @Test
+    public void deveRetornarErroDeMinimoQuandoSenhaTemMenosDeOitoCaracteres() {
+        Cadastro cad = new Cadastro();
+
+        String resultado = cad.validarCadastro("João", "joao@email.com", "1234567");
+
+        assertEquals("Senha deve ter no mínimo 8 caracteres.", resultado);
+    }
 }
