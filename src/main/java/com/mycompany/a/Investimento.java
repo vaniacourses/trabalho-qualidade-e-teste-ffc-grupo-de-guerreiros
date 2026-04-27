@@ -16,6 +16,31 @@ public class Investimento extends HttpServlet {
 
     private static final double TAXA_JUROS_POR_MINUTO = 1.01;
 
+    public BigDecimal calcularValorComJuros(BigDecimal valorAtual, long minutos) {
+        if (minutos <= 0) {
+            return valorAtual;
+        }
+        double fator = Math.pow(TAXA_JUROS_POR_MINUTO, minutos);
+        return valorAtual.multiply(BigDecimal.valueOf(fator))
+                         .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public String validarOperacao(String op, BigDecimal valor, BigDecimal saldoConta, BigDecimal valorInvestido) {
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            return "Valor inválido.";
+        }
+        if (!"investir".equals(op) && !"retirar".equals(op)) {
+            return "Operação inválida.";
+        }
+        if ("investir".equals(op) && saldoConta.compareTo(valor) < 0) {
+            return "Saldo insuficiente na conta.";
+        }
+        if ("retirar".equals(op) && valorInvestido.compareTo(valor) < 0) {
+            return "Valor maior que o investido.";
+        }
+        return null;
+    }
+
     /* ---------- UTIL Lazy‑Update ---------- */
     private BigDecimal lazyUpdate(Connection con, int userId) throws SQLException {
 
@@ -42,9 +67,7 @@ public class Investimento extends HttpServlet {
 
         long minutos = Duration.between(ultima.toInstant(), Instant.now()).toMinutes();
         if (minutos > 0) {
-            double fator = Math.pow(TAXA_JUROS_POR_MINUTO, minutos);          // 1 % ao minuto
-            valor = valor.multiply(BigDecimal.valueOf(fator))
-                         .setScale(2, RoundingMode.HALF_UP);
+            valor = calcularValorComJuros(valor, minutos);
 
             PreparedStatement psUp = con.prepareStatement(
                 "UPDATE investimento SET valor = ?, ultima_att = ? WHERE id = ?");
@@ -110,12 +133,14 @@ public class Investimento extends HttpServlet {
             int idConta = rsC.getInt("id");
             BigDecimal saldoConta = rsC.getBigDecimal("saldo");
 
-            if ("investir".equals(op)) {
-                if (saldoConta.compareTo(valor) < 0) {
-                    ses.setAttribute("erroInv", "Saldo insuficiente na conta.");
-                    resp.sendRedirect("investimento"); return;
-                }
+            String erro = validarOperacao(op, valor, saldoConta, valorInvest);
+            if (erro != null) {
+                ses.setAttribute("erroInv", erro);
+                resp.sendRedirect("investimento");
+                return;
+            }
 
+            if ("investir".equals(op)) {
                 // debita conta
                 PreparedStatement deb = con.prepareStatement(
                     "UPDATE conta SET saldo = saldo - ? WHERE id = ?");
@@ -135,11 +160,6 @@ public class Investimento extends HttpServlet {
                 ses.setAttribute("msgInv", "Investimento realizado com sucesso!");
 
             } else if ("retirar".equals(op)) {
-                if (valorInvest.compareTo(valor) < 0) {
-                    ses.setAttribute("erroInv", "Valor maior que o investido.");
-                    resp.sendRedirect("investimento"); return;
-                }
-
                 // credita conta
                 PreparedStatement cred = con.prepareStatement(
                     "UPDATE conta SET saldo = saldo + ? WHERE id = ?");
