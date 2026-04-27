@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "login", urlPatterns = {"/login"})
-public class login extends HttpServlet {
+public class Login extends HttpServlet {
 
     private LoginService loginService;
 

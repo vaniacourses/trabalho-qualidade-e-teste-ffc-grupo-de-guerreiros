@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "cadastro", urlPatterns = {"/cadastro"})
-public class cadastro extends HttpServlet {
+public class Cadastro extends HttpServlet {
 
     String url = "jdbc:derby://localhost:1527/trabalho";
     String usuarioBD = "eri";

@@ -7,11 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 @WebServlet(name = "deposito", urlPatterns = {"/deposito"})
-public class deposito extends HttpServlet {
-
-    private final String URL  = "jdbc:derby://localhost:1527/trabalho";
-    private final String USER = "eri";
-    private final String PASS = "eri";
+public class Deposito extends HttpServlet {
 
     // NOVO MÉTODO: Isolando a regra de negócio do Depósito para o JUnit
     public String validarDeposito(double valorDeposito) {
@@ -38,7 +34,7 @@ public class deposito extends HttpServlet {
         double saldo = 0;
         String conta = "";
 
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             PreparedStatement ps = con.prepareStatement(
                 "SELECT id, numero, saldo FROM conta WHERE usuario_id = ?");
             ps.setInt(1, idUsuario);
@@ -83,7 +79,7 @@ public class deposito extends HttpServlet {
 
         int idConta = (int) sessao.getAttribute("idConta");
 
-        try (Connection con = DriverManager.getConnection(URL, USER, PASS)) {
+        try (Connection con = DriverManager.getConnection(DatabaseConfig.getUrl(), DatabaseConfig.getUser(), DatabaseConfig.getPassword())) {
             con.setAutoCommit(false);
 
             // 1. Atualiza saldo

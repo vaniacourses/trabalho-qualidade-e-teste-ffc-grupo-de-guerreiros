@@ -8,14 +8,13 @@ import java.sql.SQLException;
 
 public class UsuarioDAO {
 
-    private String url = "jdbc:derby://localhost:1527/trabalho";
-    private String usuarioBD = "eri";
-    private String senhaBD = "eri";
-
     public Usuario buscarPorEmailESenha(String email, String senha) throws SQLException {
         String sql = "SELECT id, nome FROM usuario WHERE email = ? AND senha = ?";
 
-        try (Connection con = DriverManager.getConnection(url, usuarioBD, senhaBD);
+        try (Connection con = DriverManager.getConnection(
+                    DatabaseConfig.getUrl(),
+                    DatabaseConfig.getUser(),
+                    DatabaseConfig.getPassword());
              PreparedStatement pst = con.prepareStatement(sql)) {
 
             pst.setString(1, email);
