@@ -74,9 +74,13 @@ public class Cadastro extends HttpServlet {
 
             // Redireciona para login
             response.sendRedirect("login");
+        } catch (SQLIntegrityConstraintViolationException dup) {
+            request.setAttribute("erroCadastro", "Email já cadastrado.");
+            request.getRequestDispatcher("/WEB-INF/cadastro.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
-            response.getWriter().println("Erro ao cadastrar: " + e.getMessage());
+            request.setAttribute("erroCadastro", "Erro ao processar cadastro. Tente novamente.");
+            request.getRequestDispatcher("/WEB-INF/cadastro.jsp").forward(request, response);
         }
     }
 }

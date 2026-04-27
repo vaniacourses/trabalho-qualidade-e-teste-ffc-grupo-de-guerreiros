@@ -92,7 +92,13 @@
             width:100%;
             margin-top:14px;
         }
-        
+
+        .erro {
+            color:#e74c3c;
+            text-align:center;
+            margin-bottom:12px;
+        }
+
         a.link {
             display:block;
             text-align:center;
@@ -116,6 +122,10 @@
     <!-- FORM -->
     <div class="card">
         <h2>Cadastro</h2>
+        <% String erroCad = (String) request.getAttribute("erroCadastro"); %>
+        <% if (erroCad != null) { %>
+            <p class="erro"><%= erroCad %></p>
+        <% } %>
         <form method="post" action="cadastro">
             <input type="text" name="nome" placeholder="Nome completo" required>
             <input type="email" name="email" placeholder="Email" required>
