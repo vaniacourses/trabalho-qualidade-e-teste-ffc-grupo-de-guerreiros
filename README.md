@@ -27,18 +27,13 @@ Construído com **Spring Boot 3 + Thymeleaf + PostgreSQL**, totalmente empacotad
 1. [O que o projeto faz](#-o-que-o-projeto-faz)
 2. [Tecnologias](#-tecnologias)
 3. [Arquitetura](#-arquitetura)
-4. [Passo a passo para rodar](#-passo-a-passo-para-rodar)
-   - [1. Instalar o Docker](#1-instalar-o-docker)
-   - [2. Clonar o repositório](#2-clonar-o-repositório)
-   - [3. Subir a aplicação](#3-subir-a-aplicação)
-   - [4. Acessar](#4-acessar)
+4. [Quick start](#-quick-start)
 5. [Usuários de teste](#-usuários-de-teste)
-6. [Comandos úteis do Docker](#-comandos-úteis-do-docker)
-7. [Estrutura de pastas](#-estrutura-de-pastas)
-8. [Testes automatizados](#-testes-automatizados)
-9. [Troubleshooting](#-troubleshooting)
-10. [Issues resolvidas](#-issues-resolvidas-nesta-entrega)
-11. [Próximas entregas](#-próximas-entregas)
+6. [Estrutura de pastas](#-estrutura-de-pastas)
+7. [Testes automatizados](#-testes-automatizados)
+8. [Issues resolvidas](#-issues-resolvidas-nesta-entrega)
+9. [Próximas entregas](#-próximas-entregas)
+10. [Documentação adicional](#-documentação-adicional)
 
 ---
 
@@ -152,136 +147,24 @@ Detalhes em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
-## 🚀 Passo a passo para rodar
+## 🚀 Quick start
 
-> **TL;DR** se você já tem Docker:
-> ```bash
-> git clone <url-do-repo>
-> cd trabalho-qualidade-e-teste-ffc-grupo-de-guerreiros
-> docker compose up -d --build
-> # abre http://localhost:8080
-> ```
-
-Caso não tenha Docker ainda, siga abaixo. **Você não precisa instalar Java, Maven nem PostgreSQL** — tudo roda dentro de containers.
-
-### 1. Instalar o Docker
-
-#### 🍎 macOS (Intel ou Apple Silicon)
-
-**Opção A — Docker Desktop** (recomendado, tem UI):
-
-1. Baixe em <https://www.docker.com/products/docker-desktop/> (escolha "Apple Chip" se for M1/M2/M3/M4, ou "Intel chip" caso contrário).
-2. Abra o `.dmg`, arraste o ícone do Docker para `Applications`.
-3. Abra o **Docker Desktop** pelo Launchpad. Aceite os termos, aguarde o ícone 🐳 aparecer na barra de menu e ficar **verde** (engine started).
-
-**Opção B — Homebrew** (CLI puro):
-
-```bash
-brew install --cask docker
-open -a Docker      # abre o Docker Desktop
-```
-
-**Verificar:**
-```bash
-docker --version            # Docker version 24.x ou superior
-docker compose version      # Docker Compose version v2.x
-docker info                 # tem que conectar sem erro
-```
-
----
-
-#### 🐧 Linux — Ubuntu / Debian
-
-```bash
-# 1. Adicionar repositório oficial
-sudo apt-get update
-sudo apt-get install -y ca-certificates curl gnupg
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-    sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-    https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# 2. Instalar engine + compose plugin
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# 3. Rodar sem sudo (opcional, recomendado)
-sudo usermod -aG docker $USER
-newgrp docker
-
-# 4. Verificar
-docker --version
-docker compose version
-```
-
-Detalhes oficiais: <https://docs.docker.com/engine/install/ubuntu/>
-
----
-
-#### 🎩 Linux — Fedora / RHEL / CentOS Stream
-
-```bash
-sudo dnf -y install dnf-plugins-core
-sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo systemctl enable --now docker
-sudo usermod -aG docker $USER
-newgrp docker
-docker --version
-```
-
----
-
-#### 🪟 Windows (via WSL2)
-
-1. Habilite o **WSL2**: abra PowerShell como Admin e rode `wsl --install`. Reinicie.
-2. Baixe e instale o **Docker Desktop**: <https://www.docker.com/products/docker-desktop/>.
-3. Abra o Docker Desktop → **Settings** → **General** → marque "Use the WSL 2 based engine".
-4. Abra um terminal WSL (Ubuntu por exemplo) e rode `docker --version`.
-
----
-
-### 2. Clonar o repositório
+> Você só precisa de **Docker** instalado. Não precisa de Java, Maven nem Postgres no seu sistema — tudo roda em containers.
 
 ```bash
 git clone <url-do-repo>
 cd trabalho-qualidade-e-teste-ffc-grupo-de-guerreiros
-```
-
-### 3. Subir a aplicação
-
-```bash
 docker compose up -d --build
 ```
 
-**O que acontece** (1ª execução leva ~3-5 min, depois ~10s):
+Espera ~3-5 min na primeira vez (download de imagens + build). Depois, acesse:
 
-1. 🔨 Docker baixa as imagens base (`maven`, `eclipse-temurin`, `postgres:16-alpine`, `adminer`).
-2. 🏗 Builda a imagem da app dentro do container (Maven baixa deps, compila, empacota o JAR).
-3. 🐘 Sobe o **Postgres** e espera o `pg_isready` ficar verde.
-4. 📜 A app sobe e o **Flyway aplica `V1__init_schema.sql` + `V2__seed_data.sql`** (cria tabelas + insere 5 usuários de teste).
-5. 🟢 Spring Boot fica disponível em ~1.5 s após o boot.
-6. 🔍 Adminer fica disponível em paralelo.
+| Serviço | URL |
+|---|---|
+| 🏦 **Aplicação** | <http://localhost:8080> — login `joao@email.com` / `senha123` |
+| 🗄 **Adminer** (UI do banco) | <http://localhost:8081> — server: `postgres`, base/user/pass: `bancodigital` |
 
-Acompanhe os logs:
-
-```bash
-docker compose logs -f app          # logs do Spring Boot (Ctrl+C para sair)
-docker compose ps                   # status dos 3 containers
-```
-
-Quando os 3 estiverem `Up (healthy)`, está pronto.
-
-### 4. Acessar
-
-| Serviço | URL | Credenciais |
-|---|---|---|
-| 🏦 **Aplicação** | <http://localhost:8080> | `joao@email.com` / `senha123` (ou cadastre um novo) |
-| 🗄 **Adminer** (UI do banco) | <http://localhost:8081> | Sistema: `PostgreSQL` · Servidor: `postgres` · Usuário: `bancodigital` · Senha: `bancodigital` · Base: `bancodigital` |
-| ❤️ **Health** | <http://localhost:8080/actuator/health> | público |
-| 🐘 **PostgreSQL direto** | `localhost:5432` | `bancodigital` / `bancodigital` |
+➡️ **Guia completo de setup** (como instalar Docker em macOS/Linux/Windows, comandos úteis, troubleshooting): **[docs/SETUP.md](docs/SETUP.md)**
 
 ---
 
@@ -298,39 +181,6 @@ Os seeds (em `V2__seed_data.sql`) criam 5 usuários, **todos com a senha `senha1
 | `carlos@email.com` | `C00005` | R$ 100,00 | depósito + transferência recebida |
 
 > 💡 **Resetar tudo aos seeds**: `docker compose down -v && docker compose up -d` (apaga o volume `pgdata`, Flyway re-aplica V1 + V2 do zero).
-
----
-
-## ⚙️ Comandos úteis do Docker
-
-```bash
-# Subir / derrubar
-docker compose up -d --build         # builda imagem e sobe os 3 serviços em background
-docker compose stop                  # pausa os containers (estado preservado)
-docker compose start                 # retoma
-docker compose down                  # derruba e remove containers (mantém volume → dados preservados)
-docker compose down -v               # derruba e APAGA o volume (perde todos os dados!)
-
-# Observar
-docker compose ps                    # status dos 3 containers
-docker compose logs -f app           # tail dos logs da app
-docker compose logs postgres         # logs do Postgres
-docker compose top                   # processos rodando
-
-# Inspecionar o banco
-docker compose exec postgres psql -U bancodigital -d bancodigital
-# dentro do psql:
-#   \dt                              -- listar tabelas
-#   SELECT * FROM usuario;
-#   SELECT * FROM conta;
-#   \q                               -- sair
-
-# Rebuildar só a app (após mudar código)
-docker compose up -d --build app
-
-# Limpar tudo (containers, imagens, volumes, networks)
-docker compose down -v --rmi all --remove-orphans
-```
 
 ---
 
@@ -401,80 +251,6 @@ docker compose exec app sh -c "echo 'use mvn no host ou containerize'"
 
 ---
 
-## 🛟 Troubleshooting
-
-<details>
-<summary><strong>"Cannot connect to the Docker daemon"</strong></summary>
-
-O Docker Desktop não está rodando.
-- **macOS**: abra o app pelo Launchpad e aguarde o ícone 🐳 ficar verde na barra de menu.
-- **Linux**: `sudo systemctl start docker` (e `sudo systemctl enable docker` para iniciar no boot).
-
-</details>
-
-<details>
-<summary><strong>Porta 8080, 8081 ou 5432 já em uso</strong></summary>
-
-Alguma outra aplicação está ocupando a porta. Descubra qual:
-
-```bash
-lsof -i :8080        # macOS / Linux
-```
-
-Mate o processo, ou edite o `docker-compose.yml` para mapear outras portas (ex.: `"8090:8080"` em vez de `"8080:8080"`).
-
-</details>
-
-<details>
-<summary><strong>App container reinicia em loop</strong></summary>
-
-Veja o motivo:
-```bash
-docker compose logs app | tail -50
-```
-
-Erros comuns:
-- **Flyway checksum mismatch**: você editou um arquivo `V*__*.sql` depois de já ter sido aplicado. Solução em dev: `docker compose down -v && docker compose up -d` (recomeça do zero).
-- **Connection refused para postgres**: o Postgres ainda está subindo. O `depends_on: condition: service_healthy` resolve, mas se a primeira subida falhar tente `docker compose restart app`.
-
-</details>
-
-<details>
-<summary><strong>"Esqueci a senha" / quero resetar os seeds</strong></summary>
-
-```bash
-docker compose down -v
-docker compose up -d
-```
-
-Tudo volta ao estado dos seeds (`joao@email.com` / `senha123`, etc).
-
-</details>
-
-<details>
-<summary><strong>Erros na IDE ("record cannot be resolved", "Syntax error on token")</strong></summary>
-
-Sua IDE não está configurada com JDK 17+. Mesmo que o build do Maven funcione (porque o Maven usa o JDK que ele encontrar), o Eclipse JDT Language Server (usado por VSCode/IntelliJ/Eclipse) precisa ser apontado pra um JDK ≥ 17.
-
-**VSCode** (mais comum):
-1. Instale o JDK 17 ou superior (`brew install openjdk@21` no Mac).
-2. Crie `.vscode/settings.json`:
-   ```json
-   {
-     "java.configuration.runtimes": [
-       { "name": "JavaSE-17", "path": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home" }
-     ]
-   }
-   ```
-   (ajuste o `path` conforme o JDK instalado — use `/usr/libexec/java_home -v 21` no Mac para descobrir).
-3. `Cmd+Shift+P` → **Java: Clean Java Language Server Workspace** → "Restart and delete".
-
-**IntelliJ**: `File → Project Structure → Project SDK → JDK 17+` e depois `Maven → Reload All Projects`.
-
-</details>
-
----
-
 ## ✅ Issues resolvidas nesta entrega
 
 Esta PR fecha as seguintes issues do GitHub:
@@ -502,7 +278,8 @@ Ficam para a **Entrega 2**:
 
 ## 📚 Documentação adicional
 
-- 🏗 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — diagramas, decisões de design, mapeamento de camadas.
+- 🚀 [**docs/SETUP.md**](docs/SETUP.md) — guia completo: como instalar Docker (macOS/Linux/Windows), comandos úteis, troubleshooting.
+- 🏗 [**docs/ARCHITECTURE.md**](docs/ARCHITECTURE.md) — diagramas, decisões de design, mapeamento de camadas.
 
 ---
 
