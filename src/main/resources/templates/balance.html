@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Digital — Saldo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: topbar}"></div>
+
+<div class="container">
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="card">
+        <h1>Saldo</h1>
+        <p class="muted">Conta <strong th:text="${account.number}">C00000</strong></p>
+        <p class="balance-highlight" th:text="${#numbers.formatCurrency(account.balance)}">R$ 0,00</p>
+        <a class="btn" th:href="@{/dashboard}">Voltar</a>
+    </div>
+</div>
+
+</body>
+</html>

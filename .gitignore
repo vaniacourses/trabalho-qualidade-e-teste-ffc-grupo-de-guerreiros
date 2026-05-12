@@ -1,52 +1,44 @@
-# Diretórios de build
+# Build
 target/
 build/
-dist/
 out/
 bin/
 
-# NetBeans
-nbproject/private/
-nbbuild/
-nbdist/
-.nb-gradle/
-*.iml
-*.ipr
-*.iws
-
 # Maven
+.mvn/wrapper/maven-wrapper.jar
 pom.xml.*
 release.properties
 
-# Tomcat
-*.war
-*.ear
+# Spring Boot
+*.original
 
-# Derby
-derby.log
-*.dat
-*.lck
-*.lobs
+# IDE
+.idea/
+.settings/
+.classpath
+.project
+.vscode/
+*.iml
+*.ipr
+*.iws
+nbproject/
+nb-configuration.xml
 
-# Sistemas
+# OS
 .DS_Store
 Thumbs.db
 
-# Logs e temporários
+# Logs
 *.log
 logs/
 *.tmp
 *.swp
 *~
 
-# Configurações locais
-src/main/resources/db.properties
-*.prefs
+# Env / secrets
 .env
-config/
+.env.*
+!.env.example
 
-# IDEs
-.idea/
-.settings/
-.classpath
-.project
+# Docker volume (se montado localmente)
+pgdata/

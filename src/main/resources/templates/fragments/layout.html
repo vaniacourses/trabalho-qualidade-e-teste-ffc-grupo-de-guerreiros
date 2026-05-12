@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|Banco Digital — ${titulo}|">Banco Digital</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="topbar" th:fragment="topbar" sec:authorize="isAuthenticated()">
+    <a class="brand" th:href="@{/dashboard}">Banco Digital</a>
+    <nav>
+        <a th:href="@{/dashboard}">Painel</a>
+        <a th:href="@{/balance}">Saldo</a>
+        <a th:href="@{/deposit}">Depósito</a>
+        <a th:href="@{/withdraw}">Saque</a>
+        <a th:href="@{/transfer}">Transferência</a>
+        <a th:href="@{/investment}">Investimento</a>
+        <a th:href="@{/statement}">Extrato</a>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit">Sair</button>
+        </form>
+    </nav>
+</header>
+
+<div th:fragment="alertas" class="alerts">
+    <p th:if="${message}" class="alert success" th:text="${message}"></p>
+    <p th:if="${error}"   class="alert error"   th:text="${error}"></p>
+</div>
+
+</body>
+</html>

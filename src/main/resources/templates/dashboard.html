@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Digital — Painel</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: topbar}"></div>
+
+<div class="container">
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="card">
+        <h1>Olá, <span th:text="${userName}">usuário</span>!</h1>
+        <p>O que você gostaria de fazer hoje?</p>
+
+        <div class="cards-grid">
+            <a th:href="@{/balance}">💰 Saldo</a>
+            <a th:href="@{/deposit}">⬇ Depósito</a>
+            <a th:href="@{/withdraw}">⬆ Saque</a>
+            <a th:href="@{/transfer}">↔ Transferência</a>
+            <a th:href="@{/investment}">📈 Investimento</a>
+            <a th:href="@{/statement}">📜 Extrato</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
