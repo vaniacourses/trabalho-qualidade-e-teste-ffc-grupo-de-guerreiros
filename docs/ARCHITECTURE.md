@@ -39,8 +39,8 @@ com.bancodigital
 │       └── GlobalExceptionHandler   # @ControllerAdvice
 ├── login
 │   ├── Usuario                 # record
-│   ├── UsuarioRepository
-│   ├── LoginService
+│   ├── UsuarioRepository       # interface
+│   ├── JdbcUsuarioRepository   # impl JDBC
 │   ├── CustomUserDetailsService  # ponte para Spring Security
 │   ├── UsuarioAtual             # resolve o Usuario do principal logado
 │   ├── LoginController

@@ -128,24 +128,18 @@ Flyway aplica `V1__init_schema.sql` e `V2__seed_data.sql` automaticamente na pri
 mvn test
 ```
 
-Cobertura unitária atual (128 testes JUnit 5, sem Mockito):
+Cobertura unitária atual (89 testes JUnit 5 puros — sem mocks, sem fakes, sem dependências externas):
 
 | Suite | Testes | Cobre |
 |---|---|---|
 | `MoneyTest` | 16 | helpers `normalize` / `parseOrNull` / `isPositive` / `format` |
 | `TipoTransacaoTest` | 9 | enum e parsing por valor do banco |
 | `ExtratoLinhaTest` | 15 | factory `de()`, `corPara`, `descricaoPara` |
-| `LoginServiceTest` | 8 | autenticação com `UsuarioRepositoryFake` |
 | `CadastroServiceTest` | 12 | validação pura de nome/email/senha |
-| `CadastroServiceCadastrarTest` | 8 | `cadastrar()` end-to-end com fakes (BCrypt aplicado, persiste usuário+conta atomicamente) |
 | `ContaServiceTest` | 23 | validações `validaSaque`/`validarDeposito`/`validarTransferencia` |
-| `ContaServiceTransacionalTest` | 13 | `sacar`/`depositar`/`transferir` com fakes (movimenta saldos, registra transação) |
 | `InvestimentoServiceTest` | 14 | `calcularValorComJuros` (juros compostos), `validarOperacao` |
-| `InvestimentoServiceTransacionalTest` | 10 | `consultar`/`executar` com `Clock` fixo (juros aplicam antes da operação) |
 
-Os testes usam **fakes in-memory** (não mocks): `UsuarioRepositoryFake`, `ContaRepositoryFake`, `TransacaoRepositoryFake`, `InvestimentoRepositoryFake` — cada um implementa a interface do repositório com dados em memória.
-
-> Testes de integração (Testcontainers + PostgreSQL) ficam para a próxima etapa do trabalho.
+Todos os testes exercitam **métodos puros** que não dependem de banco, HTTP, sessão ou Spring context. Cenários que precisam atravessar repositórios (`cadastrar`, `sacar`, `depositar`, `transferir`, `consultar`, `executar` do Investimento, fluxo completo de login) ficam para a próxima etapa, junto com os testes de integração via Testcontainers + PostgreSQL.
 
 ## Troubleshooting da IDE
 
