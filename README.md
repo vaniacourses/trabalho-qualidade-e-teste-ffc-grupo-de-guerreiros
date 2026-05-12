@@ -1,126 +1,153 @@
-# Sistema Bancário — Java/Jakarta EE
+# Banco Digital — Sistema Bancário Acadêmico
 
-Aplicação web acadêmica que simula operações básicas de um sistema bancário (transferência, saque, investimento, depósito e login), construída com Servlets e JSP sobre Jakarta EE 10.
+Aplicação web acadêmica que simula operações básicas de um sistema bancário (login, cadastro, saldo, depósito, saque, transferência, investimento e extrato), construída com **Spring Boot 3 + Thymeleaf** sobre **PostgreSQL**, empacotada em **Docker Compose**.
 
-![Java](https://img.shields.io/badge/Java-11-007396?logo=openjdk&logoColor=white)
-![Jakarta EE](https://img.shields.io/badge/Jakarta%20EE-10-FF6F00?logo=eclipse&logoColor=white)
-![Maven](https://img.shields.io/badge/Maven-3.8%2B-C71A36?logo=apachemaven&logoColor=white)
-![JUnit 5](https://img.shields.io/badge/JUnit-5.10.0-25A162?logo=junit5&logoColor=white)
-![Apache Derby](https://img.shields.io/badge/Apache%20Derby-10.16%2B-D22128?logo=apache&logoColor=white)
-![Glassfish](https://img.shields.io/badge/Glassfish-7-F89A2D?logo=eclipseglassfish&logoColor=white)
-![Tomcat](https://img.shields.io/badge/Tomcat-10.1%2B-F8DC75?logo=apachetomcat&logoColor=black)
+![Java](https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-6DB33F?logo=springboot&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-3.9%2B-C71A36?logo=apachemaven&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Flyway](https://img.shields.io/badge/Flyway-10-CC0200?logo=flyway&logoColor=white)
+![Thymeleaf](https://img.shields.io/badge/Thymeleaf-3-005F0F?logo=thymeleaf&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![JUnit 5](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white)
 
 ## Sobre o projeto
 
-O projeto é um trabalho acadêmico das disciplinas de Qualidade e Teste de Software. A aplicação expõe um conjunto de telas JSP que se comunicam com Servlets responsáveis por orquestrar a lógica de negócio e o acesso ao banco de dados Apache Derby. O foco do trabalho é exercitar testes unitários, refatorações e práticas de qualidade sobre uma base de código existente.
+Trabalho das disciplinas de Qualidade e Teste de Software. Foi profissionalizado a partir de uma base original em Servlets+JSP+Derby para uma stack moderna **sem perder regra de negócio**: hashing BCrypt para senhas, transações JDBC atômicas com row-level locking, constraints de unicidade no schema, mensagens de erro centralizadas e templates Thymeleaf com escape automático contra XSS.
 
-A aplicação é organizada em cinco domínios funcionais:
+Domínios funcionais:
 
-- **Transferência** — movimentação de saldo entre contas.
-- **Saque** — retirada de valores da conta.
-- **Investimento** — aplicação de valores em produtos de investimento.
-- **Depósito** — entrada de valores na conta.
-- **Login** — autenticação do usuário e controle de sessão.
+| Domínio | Endpoints |
+|---|---|
+| Login / Painel | `GET /login`, `POST /login`, `GET /painel`, `POST /logout` |
+| Cadastro | `GET /cadastro`, `POST /cadastro` |
+| Saldo | `GET /saldo` |
+| Depósito | `GET /deposito`, `POST /deposito` |
+| Saque | `GET /saque`, `POST /saque` |
+| Transferência | `GET /transferencia`, `POST /transferencia` |
+| Investimento | `GET /investimento`, `POST /investimento` |
+| Extrato | `GET /extrato` |
 
-## Tecnologias
+## Stack
 
-- ![Java](https://img.shields.io/badge/Java-11-007396?logo=openjdk&logoColor=white) Linguagem principal.
-- ![Jakarta EE](https://img.shields.io/badge/Jakarta%20EE-10-FF6F00?logo=eclipse&logoColor=white) Plataforma para Servlets e JSP.
-- ![Maven](https://img.shields.io/badge/Maven-3.8%2B-C71A36?logo=apachemaven&logoColor=white) Build e gerenciamento de dependências.
-- ![JUnit 5](https://img.shields.io/badge/JUnit-5.10.0-25A162?logo=junit5&logoColor=white) Framework de testes unitários.
-- ![Apache Derby](https://img.shields.io/badge/Apache%20Derby-10.16%2B-D22128?logo=apache&logoColor=white) Banco de dados relacional embarcado/em rede.
-- ![Glassfish](https://img.shields.io/badge/Glassfish-7-F89A2D?logo=eclipseglassfish&logoColor=white) / ![Tomcat](https://img.shields.io/badge/Tomcat-10.1%2B-F8DC75?logo=apachetomcat&logoColor=black) Servidor de aplicação.
+- **Java 17 LTS**
+- **Spring Boot 3.3** (web, jdbc, security, thymeleaf, validation, actuator)
+- **PostgreSQL 16** (substitui Derby)
+- **HikariCP** (pool de conexões — vem com `spring-boot-starter-jdbc`)
+- **Flyway** (migrações versionadas em `src/main/resources/db/migration`)
+- **Spring Security** com form login, CSRF e BCrypt
+- **Thymeleaf** (templates HTML server-side)
+- **JUnit 5** (testes unitários — sem Mockito, sem Testcontainers nesta etapa)
+- **Docker Compose** (app + postgres + adminer)
 
-## Estrutura do repositório
+## Estrutura
 
 ```
 .
-├── docs/
-│   └── ARCHITECTURE.md
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.yml
-│   │   └── refactor.yml
-│   └── pull_request_template.md
+├── docker-compose.yml          # postgres + app + adminer
+├── Dockerfile                  # multi-stage maven → jre alpine
+├── .env.example                # credenciais p/ desenvolvimento
+├── pom.xml
 ├── src/
 │   ├── main/
-│   │   ├── java/        # Servlets, DAOs e configuração
-│   │   ├── resources/   # db.properties.example
-│   │   └── webapp/      # JSPs e WEB-INF
-│   └── test/
-│       └── java/        # Testes JUnit 5
-├── pom.xml
-└── README.md
+│   │   ├── java/com/bancodigital/
+│   │   │   ├── BancodigitalApplication.java
+│   │   │   ├── config/         # SecurityConfig, AppConfig, HomeController
+│   │   │   ├── shared/         # Mensagens, Money, DomainException, GlobalExceptionHandler
+│   │   │   ├── login/          # LoginService, Usuario, UsuarioRepository, CustomUserDetailsService
+│   │   │   ├── cadastro/       # CadastroService, CadastroForm, CadastroController
+│   │   │   ├── conta/          # ContaService, ContaRepository, controllers (Saldo/Saque/Deposito/Transferencia)
+│   │   │   ├── transacao/      # TransacaoRepository, ExtratoController, ExtratoLinha
+│   │   │   └── investimento/   # InvestimentoService, InvestimentoRepository, controller
+│   │   └── resources/
+│   │       ├── application.yml
+│   │       ├── application-docker.yml
+│   │       ├── db/migration/   # V1__init_schema.sql, V2__seed_data.sql
+│   │       ├── static/css/
+│   │       └── templates/      # *.html Thymeleaf
+│   └── test/java/com/bancodigital/   # 68 testes unitários JUnit 5
+└── docs/ARCHITECTURE.md
 ```
 
 ## Pré-requisitos
 
-- JDK 11 ou superior.
-- Maven 3.8 ou superior.
-- Glassfish 7 ou Tomcat 10.1+.
-- Apache Derby 10.16 ou superior.
+- **Docker** e **Docker Compose** (caminho recomendado), ou
+- **JDK 17** + **Maven 3.9+** + **PostgreSQL 16** rodando localmente.
 
-## Setup
+## Executar com Docker (recomendado)
 
-1. Clone o repositório:
+```bash
+cp .env.example .env       # opcionalmente edite POSTGRES_PASSWORD
+docker compose up -d --build
+```
+
+A aplicação fica disponível em:
+
+- **App**: <http://localhost:8080> (redireciona para `/login`)
+- **Adminer** (UI para o banco): <http://localhost:8081> (servidor: `postgres`, base: `bancodigital`, usuário/senha vindos do `.env`)
+- **Postgres**: `localhost:5432`
+
+Para derrubar:
+
+```bash
+docker compose down            # mantém os dados
+docker compose down -v         # apaga o volume pgdata
+```
+
+## Usuários de teste (seed)
+
+Todos com senha `senha123`:
+
+| E-mail | Conta | Saldo | Observação |
+|---|---|---|---|
+| `joao@email.com`   | C00001 | R$ 1.500,00   | Histórico simples de depósito/saque |
+| `maria@email.com`  | C00002 | R$ 9.999,99   | Tem investimento ativo de R$ 500 |
+| `pedro@email.com`  | C00003 | R$ 0,00       | Conta zerada para testar saldo insuficiente |
+| `ana@email.com`    | C00004 | R$ 25.000,00  | Histórico variado, investimento de R$ 1.500 |
+| `carlos@email.com` | C00005 | R$ 100,00     | Saldo baixo |
+
+## Executar localmente sem Docker
+
+1. Suba um Postgres local com a base/usuário desejados.
+2. Exporte variáveis de ambiente:
    ```bash
-   git clone <url-do-repositorio>
-   cd trabalho-qualidade-e-teste-ffc-grupo-de-guerreiros
+   export DB_URL=jdbc:postgresql://localhost:5432/bancodigital
+   export DB_USER=bancodigital
+   export DB_PASSWORD=bancodigital
    ```
-2. Suba o servidor de rede do Derby:
+3. Rode com:
    ```bash
-   startNetworkServer
-   ```
-3. Crie o banco de dados `trabalho` (via `ij` ou cliente equivalente):
-   ```sql
-   CONNECT 'jdbc:derby://localhost:1527/trabalho;create=true';
-   ```
-4. Copie o arquivo de configuração de exemplo e ajuste credenciais:
-   ```bash
-   cp src/main/resources/db.properties.example src/main/resources/db.properties
-   ```
-5. Compile e empacote o projeto:
-   ```bash
-   mvn clean package
-   ```
-6. Faça o deploy do `.war` gerado em `target/` no Glassfish 7 ou Tomcat 10.1+.
-7. Acesse a aplicação em:
-   ```
-   http://localhost:8080/a/login.jsp
+   mvn spring-boot:run
    ```
 
-## Como rodar os testes
+Flyway aplica `V1__init_schema.sql` e `V2__seed_data.sql` automaticamente na primeira execução.
+
+## Testes
 
 ```bash
 mvn test
 ```
 
-### Cobertura unitária
+Cobertura unitária atual (68 testes):
 
-- **Login** (`LoginService.autenticar`)
-- **Saque** (`Saque.validaSaque`)
-- **Depósito** (`Deposito.validarDeposito`)
-- **Transferência** (`Transferencia.validarTransferencia`)
-- **Investimento** (`Investimento.calcularValorComJuros` e `validarOperacao`)
-- **Cadastro** (`Cadastro.validarCadastro`)
-- **Extrato** (`Extrato.corPorTipo` e `descricaoPorTipo`)
+- `LoginServiceTest` — autenticação, edge cases de email/senha vazios/nulos/whitespace.
+- `CadastroServiceTest` — validação de nome/email (regex)/senha (length).
+- `ContaServiceTest` — `validaSaque`, `validarDeposito`, `validarTransferencia` com boundaries.
+- `InvestimentoServiceTest` — `calcularValorComJuros` (juros compostos) e `validarOperacao`.
+- `ExtratoLinhaTest` — `corPara` e `descricaoPara` por tipo de transação.
 
-### Classes intencionalmente não testadas unitariamente
+> Testes de integração (Testcontainers + PostgreSQL) e cenários com mocks ficam para a próxima etapa do trabalho.
 
-| Classe | Motivo |
-|---|---|
-| `Saldo` | Apenas consulta SQL — sem regra de negócio fora do banco. Cobertura via integração (entrega 2). |
-| `UsuarioDAO` | Acesso direto ao banco. Cobertura via integração de Login (entrega 2). |
-| `Menu` | Apenas forward para JSP. Sem lógica testável. |
-| `Painel` | Controle de sessão e logout. Dependência forte em `HttpSession`. |
-| `Usuario` | POJO (model com getters/setters). |
+## Issues resolvidas nesta etapa
 
-Decisões de cobertura registradas para evitar interpretação como "esquecimento" durante revisão.
+- **#4** — migração Derby → PostgreSQL + Docker Compose
+- **#12** — senhas com BCrypt (`spring-security-crypto`)
+- **#13** — cadastro atômico (`@Transactional` em `CadastroService`, FK `usuario_id NOT NULL`)
+- **#14** — conta com `UNIQUE(numero)` + `nextval('conta_numero_seq')` (sem `Math.random`)
+- **#15** — `investimento.usuario_id UNIQUE` + `INSERT ... ON CONFLICT DO NOTHING` para upsert idempotente
+- **#16** — mensagens centralizadas em `com.bancodigital.shared.Mensagens` (mesma string em validação e UI)
+- **#6, #7, #8, #9, #10** — Parte A (unitários) implementada; Parte B (integração) fica para próxima etapa
 
 ## Documentação adicional
 
 - [Arquitetura do sistema](docs/ARCHITECTURE.md)
-
----
-
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=23630807&assignment_repo_type=AssignmentRepo)
