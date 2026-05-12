@@ -1,3 +1,0 @@
-db.url=jdbc:derby://localhost:1527/trabalho
-db.user=eri
-db.password=eri
