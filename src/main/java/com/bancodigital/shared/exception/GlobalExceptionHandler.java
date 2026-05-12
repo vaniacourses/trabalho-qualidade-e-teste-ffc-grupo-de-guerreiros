@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public String handleAny(Exception ex, RedirectAttributes ra) {
-        log.error("Erro inesperado", ex);
+        log.error("Unexpected error", ex);
         ra.addFlashAttribute("erro", "Erro inesperado. Tente novamente em instantes.");
         return "redirect:/painel";
     }

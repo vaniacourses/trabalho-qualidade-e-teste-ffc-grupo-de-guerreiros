@@ -15,7 +15,7 @@
 
     <div class="card">
         <h1>Extrato</h1>
-        <p class="muted">Conta <strong th:text="${conta.numero}">C00000</strong></p>
+        <p class="muted">Conta <strong th:text="${conta.number}">C00000</strong></p>
 
         <p th:if="${#lists.isEmpty(linhas)}" class="muted">Nenhuma transação registrada ainda.</p>
 
@@ -30,14 +30,14 @@
             </thead>
             <tbody>
                 <tr th:each="l : ${linhas}">
-                    <td th:text="${#temporals.format(l.data, 'dd/MM/yyyy HH:mm')}">data</td>
-                    <td th:text="${l.descricao}">descrição</td>
+                    <td th:text="${#temporals.format(l.date, 'dd/MM/yyyy HH:mm')}">data</td>
+                    <td th:text="${l.description}">descrição</td>
                     <td>
                         <span class="tag"
-                              th:text="${l.tipo}"
-                              th:style="|background:${l.cor}|">tipo</span>
+                              th:text="${l.type}"
+                              th:style="|background:${l.color}|">tipo</span>
                     </td>
-                    <td style="text-align:right" th:text="${l.valorFormatado}">R$ 0,00</td>
+                    <td style="text-align:right" th:text="${l.formattedAmount}">R$ 0,00</td>
                 </tr>
             </tbody>
         </table>

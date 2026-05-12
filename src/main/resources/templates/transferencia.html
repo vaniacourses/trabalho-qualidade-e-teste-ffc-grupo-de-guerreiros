@@ -15,8 +15,8 @@
 
     <div class="card">
         <h1>Transferência</h1>
-        <p class="muted">Conta de origem <strong th:text="${conta.numero}">C00000</strong></p>
-        <p>Saldo atual: <strong th:text="${#numbers.formatCurrency(conta.saldo)}">R$ 0,00</strong></p>
+        <p class="muted">Conta de origem <strong th:text="${conta.number}">C00000</strong></p>
+        <p>Saldo atual: <strong th:text="${#numbers.formatCurrency(conta.balance)}">R$ 0,00</strong></p>
 
         <form th:action="@{/transferencia}" method="post">
             <label for="destino">Conta destino</label>

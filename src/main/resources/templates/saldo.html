@@ -15,8 +15,8 @@
 
     <div class="card">
         <h1>Saldo</h1>
-        <p class="muted">Conta <strong th:text="${conta.numero}">C00000</strong></p>
-        <p class="saldo-destaque" th:text="${#numbers.formatCurrency(conta.saldo)}">R$ 0,00</p>
+        <p class="muted">Conta <strong th:text="${conta.number}">C00000</strong></p>
+        <p class="saldo-destaque" th:text="${#numbers.formatCurrency(conta.balance)}">R$ 0,00</p>
         <a class="btn" th:href="@{/painel}">Voltar</a>
     </div>
 </div>

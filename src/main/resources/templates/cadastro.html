@@ -17,13 +17,13 @@
 
         <form th:action="@{/cadastro}" th:object="${cadastroForm}" method="post">
             <label for="nome">Nome completo</label>
-            <input type="text" id="nome" th:field="*{nome}" required minlength="2">
+            <input type="text" id="nome" th:field="*{name}" required minlength="2">
 
             <label for="email">E-mail</label>
             <input type="email" id="email" th:field="*{email}" required>
 
             <label for="senha">Senha</label>
-            <input type="password" id="senha" th:field="*{senha}" required minlength="8">
+            <input type="password" id="senha" th:field="*{password}" required minlength="8">
             <small class="muted">Mínimo 8 caracteres.</small>
 
             <button type="submit" class="primary">Cadastrar</button>

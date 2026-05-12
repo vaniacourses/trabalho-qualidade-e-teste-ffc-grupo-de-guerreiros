@@ -12,86 +12,86 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MoneyTest {
 
     @Test
-    void normalizeAplicaScale2HalfUp() {
+    void normalizeAppliesScale2HalfUp() {
         assertEquals(new BigDecimal("12.35"), Money.normalize(new BigDecimal("12.345")));
         assertEquals(new BigDecimal("12.34"), Money.normalize(new BigDecimal("12.344")));
     }
 
     @Test
-    void normalizeDeNullRetornaNull() {
+    void normalizeOfNullReturnsNull() {
         assertNull(Money.normalize(null));
     }
 
     @Test
-    void normalizeMantemValorJaArredondado() {
+    void normalizeKeepsAlreadyRoundedValue() {
         assertEquals(new BigDecimal("10.00"), Money.normalize(new BigDecimal("10")));
     }
 
     @Test
-    void parseOrNullDeStringValida() {
+    void parseOrNullFromValidString() {
         assertEquals(new BigDecimal("100.50"), Money.parseOrNull("100.50"));
     }
 
     @Test
-    void parseOrNullAceitaVirgulaComoSeparador() {
+    void parseOrNullAcceptsCommaAsSeparator() {
         assertEquals(new BigDecimal("100.50"), Money.parseOrNull("100,50"));
     }
 
     @Test
-    void parseOrNullFazTrim() {
+    void parseOrNullTrimsInput() {
         assertEquals(new BigDecimal("100.00"), Money.parseOrNull("  100  "));
     }
 
     @Test
-    void parseOrNullDeStringVazia() {
+    void parseOrNullFromEmptyString() {
         assertNull(Money.parseOrNull(""));
     }
 
     @Test
-    void parseOrNullDeWhitespace() {
+    void parseOrNullFromWhitespace() {
         assertNull(Money.parseOrNull("   "));
     }
 
     @Test
-    void parseOrNullDeNull() {
+    void parseOrNullFromNull() {
         assertNull(Money.parseOrNull(null));
     }
 
     @Test
-    void parseOrNullDeLixoNaoEhNumero() {
+    void parseOrNullFromNonNumericGarbage() {
         assertNull(Money.parseOrNull("abc"));
     }
 
     @Test
-    void isPositiveTrueParaValorPositivo() {
+    void isPositiveTrueForPositiveAmount() {
         assertTrue(Money.isPositive(new BigDecimal("0.01")));
         assertTrue(Money.isPositive(new BigDecimal("1000")));
     }
 
     @Test
-    void isPositiveFalseParaZero() {
+    void isPositiveFalseForZero() {
         assertFalse(Money.isPositive(BigDecimal.ZERO));
     }
 
     @Test
-    void isPositiveFalseParaNegativo() {
+    void isPositiveFalseForNegative() {
         assertFalse(Money.isPositive(new BigDecimal("-1")));
     }
 
     @Test
-    void isPositiveFalseParaNull() {
+    void isPositiveFalseForNull() {
         assertFalse(Money.isPositive(null));
     }
 
     @Test
-    void formatGeraStringComMoedaBR() {
+    void formatProducesStringWithBrazilianCurrency() {
         String out = Money.format(new BigDecimal("1234.56"));
-        assertTrue(out.contains("1.234,56"), "esperava milhar com ponto e decimal com vírgula em " + out);
-        assertTrue(out.contains("R$"), "esperava prefixo R$ em " + out);
+        assertTrue(out.contains("1.234,56"), "expected thousands with dot and decimal with comma in " + out);
+        assertTrue(out.contains("R$"), "expected R$ prefix in " + out);
     }
 
     @Test
-    void formatNullTratadoComoZero() {
+    void formatNullTreatedAsZero() {
         String out = Money.format(null);
         assertTrue(out.contains("0,00"));
     }
