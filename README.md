@@ -128,15 +128,50 @@ Flyway aplica `V1__init_schema.sql` e `V2__seed_data.sql` automaticamente na pri
 mvn test
 ```
 
-Cobertura unitária atual (68 testes):
+Cobertura unitária atual (128 testes JUnit 5, sem Mockito):
 
-- `LoginServiceTest` — autenticação, edge cases de email/senha vazios/nulos/whitespace.
-- `CadastroServiceTest` — validação de nome/email (regex)/senha (length).
-- `ContaServiceTest` — `validaSaque`, `validarDeposito`, `validarTransferencia` com boundaries.
-- `InvestimentoServiceTest` — `calcularValorComJuros` (juros compostos) e `validarOperacao`.
-- `ExtratoLinhaTest` — `corPara` e `descricaoPara` por tipo de transação.
+| Suite | Testes | Cobre |
+|---|---|---|
+| `MoneyTest` | 16 | helpers `normalize` / `parseOrNull` / `isPositive` / `format` |
+| `TipoTransacaoTest` | 9 | enum e parsing por valor do banco |
+| `ExtratoLinhaTest` | 15 | factory `de()`, `corPara`, `descricaoPara` |
+| `LoginServiceTest` | 8 | autenticação com `UsuarioRepositoryFake` |
+| `CadastroServiceTest` | 12 | validação pura de nome/email/senha |
+| `CadastroServiceCadastrarTest` | 8 | `cadastrar()` end-to-end com fakes (BCrypt aplicado, persiste usuário+conta atomicamente) |
+| `ContaServiceTest` | 23 | validações `validaSaque`/`validarDeposito`/`validarTransferencia` |
+| `ContaServiceTransacionalTest` | 13 | `sacar`/`depositar`/`transferir` com fakes (movimenta saldos, registra transação) |
+| `InvestimentoServiceTest` | 14 | `calcularValorComJuros` (juros compostos), `validarOperacao` |
+| `InvestimentoServiceTransacionalTest` | 10 | `consultar`/`executar` com `Clock` fixo (juros aplicam antes da operação) |
 
-> Testes de integração (Testcontainers + PostgreSQL) e cenários com mocks ficam para a próxima etapa do trabalho.
+Os testes usam **fakes in-memory** (não mocks): `UsuarioRepositoryFake`, `ContaRepositoryFake`, `TransacaoRepositoryFake`, `InvestimentoRepositoryFake` — cada um implementa a interface do repositório com dados em memória.
+
+> Testes de integração (Testcontainers + PostgreSQL) ficam para a próxima etapa do trabalho.
+
+## Troubleshooting da IDE
+
+Se a IDE acusar **"Syntax error on token(s), misplaced construct(s)"** em `record`, `switch` com `->`, ou **"X cannot be resolved to a type"** mesmo com `mvn verify` passando, é cache stale do Eclipse JDT Language Server. Resolva com:
+
+**VSCode:**
+1. Crie `.vscode/settings.json` apontando para um JDK ≥ 17:
+   ```json
+   {
+     "java.configuration.runtimes": [
+       { "name": "JavaSE-17", "path": "/caminho/para/jdk-17-ou-superior" }
+     ]
+   }
+   ```
+2. `Cmd+Shift+P` → **Java: Clean Java Language Server Workspace** → "Restart and delete".
+3. Aguarde o Java extension reimportar o `pom.xml`.
+
+**IntelliJ:**
+1. `File` → `Project Structure` → `Project SDK` → selecione JDK 17+.
+2. `Maven` panel → "Reload All Maven Projects".
+
+**Eclipse:**
+1. `Project` → `Properties` → `Java Build Path` → confirme JRE System Library [JavaSE-17].
+2. `Project` → `Clean...` → "Clean all projects".
+
+Verifique o JDK ativo com `mvn -version` (precisa ser ≥ 17).
 
 ## Issues resolvidas nesta etapa
 
