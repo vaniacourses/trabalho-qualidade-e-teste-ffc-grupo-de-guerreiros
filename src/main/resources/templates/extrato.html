@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco Digital — Extrato</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: topbar}"></div>
+
+<div class="container">
+    <div th:replace="~{fragments/layout :: alertas}"></div>
+
+    <div class="card">
+        <h1>Extrato</h1>
+        <p class="muted">Conta <strong th:text="${conta.numero}">C00000</strong></p>
+
+        <p th:if="${#lists.isEmpty(linhas)}" class="muted">Nenhuma transação registrada ainda.</p>
+
+        <table th:unless="${#lists.isEmpty(linhas)}">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Operação</th>
+                    <th>Tipo</th>
+                    <th style="text-align:right">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="l : ${linhas}">
+                    <td th:text="${#temporals.format(l.data, 'dd/MM/yyyy HH:mm')}">data</td>
+                    <td th:text="${l.descricao}">descrição</td>
+                    <td>
+                        <span class="tag"
+                              th:text="${l.tipo}"
+                              th:style="|background:${l.cor}|">tipo</span>
+                    </td>
+                    <td style="text-align:right" th:text="${l.valorFormatado}">R$ 0,00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
