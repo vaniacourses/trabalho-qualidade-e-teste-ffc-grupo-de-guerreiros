@@ -14,9 +14,9 @@ public class JdbcUserRepository implements UserRepository {
 
     private static final RowMapper<User> ROW_MAPPER = (rs, n) -> new User(
             rs.getLong("id"),
-            rs.getString("nome"),
+            rs.getString("name"),
             rs.getString("email"),
-            rs.getString("senha_hash"));
+            rs.getString("password_hash"));
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -27,7 +27,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public Optional<User> findByEmail(String email) {
         var params = new MapSqlParameterSource("email", email);
-        return jdbc.query("SELECT id, nome, email, senha_hash FROM usuario WHERE email = :email",
+        return jdbc.query("SELECT id, name, email, password_hash FROM users WHERE email = :email",
                         params, ROW_MAPPER)
                 .stream().findFirst();
     }
@@ -35,7 +35,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public boolean existsByEmail(String email) {
         Integer count = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM usuario WHERE email = :email",
+                "SELECT COUNT(*) FROM users WHERE email = :email",
                 new MapSqlParameterSource("email", email), Integer.class);
         return count != null && count > 0;
     }
@@ -43,11 +43,11 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public long save(String name, String email, String passwordHash) {
         var params = new MapSqlParameterSource()
-                .addValue("nome", name)
+                .addValue("name", name)
                 .addValue("email", email)
-                .addValue("senha_hash", passwordHash);
+                .addValue("password_hash", passwordHash);
         KeyHolder kh = new GeneratedKeyHolder();
-        jdbc.update("INSERT INTO usuario (nome, email, senha_hash) VALUES (:nome, :email, :senha_hash)",
+        jdbc.update("INSERT INTO users (name, email, password_hash) VALUES (:name, :email, :password_hash)",
                 params, kh, new String[]{"id"});
         return kh.getKey().longValue();
     }

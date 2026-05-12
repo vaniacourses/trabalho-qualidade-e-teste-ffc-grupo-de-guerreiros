@@ -13,9 +13,9 @@ public class JdbcAccountRepository implements AccountRepository {
 
     private static final RowMapper<Account> ROW_MAPPER = (rs, n) -> new Account(
             rs.getLong("id"),
-            rs.getString("numero"),
-            rs.getBigDecimal("saldo"),
-            rs.getLong("usuario_id"));
+            rs.getString("number"),
+            rs.getBigDecimal("balance"),
+            rs.getLong("user_id"));
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -26,7 +26,7 @@ public class JdbcAccountRepository implements AccountRepository {
     @Override
     public Optional<Account> findByUserId(long userId) {
         return jdbc.query(
-                "SELECT id, numero, saldo, usuario_id FROM conta WHERE usuario_id = :uid",
+                "SELECT id, number, balance, user_id FROM accounts WHERE user_id = :uid",
                 new MapSqlParameterSource("uid", userId), ROW_MAPPER)
                 .stream().findFirst();
     }
@@ -34,43 +34,43 @@ public class JdbcAccountRepository implements AccountRepository {
     @Override
     public Optional<Account> findByNumber(String number) {
         return jdbc.query(
-                "SELECT id, numero, saldo, usuario_id FROM conta WHERE numero = :numero",
-                new MapSqlParameterSource("numero", number), ROW_MAPPER)
+                "SELECT id, number, balance, user_id FROM accounts WHERE number = :number",
+                new MapSqlParameterSource("number", number), ROW_MAPPER)
                 .stream().findFirst();
     }
 
     @Override
     public Optional<Account> findByIdForUpdate(long id) {
         return jdbc.query(
-                "SELECT id, numero, saldo, usuario_id FROM conta WHERE id = :id FOR UPDATE",
+                "SELECT id, number, balance, user_id FROM accounts WHERE id = :id FOR UPDATE",
                 new MapSqlParameterSource("id", id), ROW_MAPPER)
                 .stream().findFirst();
     }
 
     @Override
     public void credit(long id, BigDecimal amount) {
-        jdbc.update("UPDATE conta SET saldo = saldo + :valor WHERE id = :id",
-                new MapSqlParameterSource().addValue("valor", amount).addValue("id", id));
+        jdbc.update("UPDATE accounts SET balance = balance + :amount WHERE id = :id",
+                new MapSqlParameterSource().addValue("amount", amount).addValue("id", id));
     }
 
     @Override
     public void debit(long id, BigDecimal amount) {
-        jdbc.update("UPDATE conta SET saldo = saldo - :valor WHERE id = :id",
-                new MapSqlParameterSource().addValue("valor", amount).addValue("id", id));
+        jdbc.update("UPDATE accounts SET balance = balance - :amount WHERE id = :id",
+                new MapSqlParameterSource().addValue("amount", amount).addValue("id", id));
     }
 
     @Override
     public String nextAccountNumber() {
-        Long n = jdbc.queryForObject("SELECT nextval('conta_numero_seq')",
+        Long n = jdbc.queryForObject("SELECT nextval('account_number_seq')",
                 new MapSqlParameterSource(), Long.class);
         return String.format("C%05d", n);
     }
 
     @Override
     public void insert(String number, long userId) {
-        jdbc.update("INSERT INTO conta (numero, saldo, usuario_id) VALUES (:numero, 0, :uid)",
+        jdbc.update("INSERT INTO accounts (number, balance, user_id) VALUES (:number, 0, :uid)",
                 new MapSqlParameterSource()
-                        .addValue("numero", number)
+                        .addValue("number", number)
                         .addValue("uid", userId));
     }
 }

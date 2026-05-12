@@ -25,25 +25,25 @@ public record StatementLine(
 
     public static String colorFor(TransactionType type) {
         switch (type) {
-            case DEPOSITO: return "#3bb54a";
-            case SAQUE: return "#e74c3c";
-            case TRANSFERENCIA: return "#3498db";
-            case INVESTIMENTO: return "#9b59b6";
-            case RESGATE: return "#f39c12";
+            case DEPOSIT: return "#3bb54a";
+            case WITHDRAW: return "#e74c3c";
+            case TRANSFER: return "#3498db";
+            case INVESTMENT: return "#9b59b6";
+            case REDEMPTION: return "#f39c12";
             default: return "#999999";
         }
     }
 
     public static String descriptionFor(TransactionType type, Long destinationAccount, long contextAccountId) {
         switch (type) {
-            case DEPOSITO: return "Depósito realizado";
-            case SAQUE: return "Saque efetuado";
-            case TRANSFERENCIA:
+            case DEPOSIT: return "Depósito realizado";
+            case WITHDRAW: return "Saque efetuado";
+            case TRANSFER:
                 return destinationAccount != null && destinationAccount == contextAccountId
                         ? "Transferência recebida"
                         : "Transferência enviada";
-            case INVESTIMENTO: return "Investimento aplicado";
-            case RESGATE: return "Resgate de investimento";
+            case INVESTMENT: return "Investimento aplicado";
+            case REDEMPTION: return "Resgate de investimento";
             default: return "Outra operação";
         }
     }

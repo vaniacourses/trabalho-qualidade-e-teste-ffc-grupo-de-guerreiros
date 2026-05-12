@@ -9,32 +9,32 @@ class TransactionTypeTest {
 
     @Test
     void depositDbValue() {
-        assertEquals("deposito", TransactionType.DEPOSITO.getDbValue());
+        assertEquals("deposit", TransactionType.DEPOSIT.getDbValue());
     }
 
     @Test
     void withdrawDbValue() {
-        assertEquals("saque", TransactionType.SAQUE.getDbValue());
+        assertEquals("withdraw", TransactionType.WITHDRAW.getDbValue());
     }
 
     @Test
     void transferDbValue() {
-        assertEquals("transferencia", TransactionType.TRANSFERENCIA.getDbValue());
+        assertEquals("transfer", TransactionType.TRANSFER.getDbValue());
     }
 
     @Test
     void investmentDbValue() {
-        assertEquals("investimento", TransactionType.INVESTIMENTO.getDbValue());
+        assertEquals("investment", TransactionType.INVESTMENT.getDbValue());
     }
 
     @Test
     void redemptionDbValue() {
-        assertEquals("resgate", TransactionType.RESGATE.getDbValue());
+        assertEquals("redemption", TransactionType.REDEMPTION.getDbValue());
     }
 
     @Test
     void fromDbValueResolvesDeposit() {
-        assertEquals(TransactionType.DEPOSITO, TransactionType.fromDbValue("deposito"));
+        assertEquals(TransactionType.DEPOSIT, TransactionType.fromDbValue("deposit"));
     }
 
     @Test

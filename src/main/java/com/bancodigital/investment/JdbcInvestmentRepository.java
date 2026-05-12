@@ -14,9 +14,9 @@ public class JdbcInvestmentRepository implements InvestmentRepository {
 
     private static final RowMapper<Investment> ROW_MAPPER = (rs, n) -> new Investment(
             rs.getLong("id"),
-            rs.getLong("usuario_id"),
-            rs.getBigDecimal("valor"),
-            rs.getObject("ultima_att", OffsetDateTime.class));
+            rs.getLong("user_id"),
+            rs.getBigDecimal("amount"),
+            rs.getObject("last_update", OffsetDateTime.class));
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -27,7 +27,7 @@ public class JdbcInvestmentRepository implements InvestmentRepository {
     @Override
     public Optional<Investment> findByUserId(long userId) {
         return jdbc.query(
-                "SELECT id, usuario_id, valor, ultima_att FROM investimento WHERE usuario_id = :uid",
+                "SELECT id, user_id, amount, last_update FROM investments WHERE user_id = :uid",
                 new MapSqlParameterSource("uid", userId), ROW_MAPPER)
                 .stream().findFirst();
     }
@@ -35,15 +35,15 @@ public class JdbcInvestmentRepository implements InvestmentRepository {
     @Override
     public void ensureExists(long userId) {
         jdbc.update(
-                "INSERT INTO investimento (usuario_id, valor, ultima_att) VALUES (:uid, 0, now()) "
-                        + "ON CONFLICT (usuario_id) DO NOTHING",
+                "INSERT INTO investments (user_id, amount, last_update) VALUES (:uid, 0, now()) "
+                        + "ON CONFLICT (user_id) DO NOTHING",
                 new MapSqlParameterSource("uid", userId));
     }
 
     @Override
     public void update(long userId, BigDecimal amount, OffsetDateTime lastUpdate) {
         jdbc.update(
-                "UPDATE investimento SET valor = :v, ultima_att = :ts WHERE usuario_id = :uid",
+                "UPDATE investments SET amount = :v, last_update = :ts WHERE user_id = :uid",
                 new MapSqlParameterSource()
                         .addValue("v", amount)
                         .addValue("ts", lastUpdate)

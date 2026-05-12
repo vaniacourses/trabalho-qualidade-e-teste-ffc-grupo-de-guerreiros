@@ -1,11 +1,11 @@
 package com.bancodigital.transaction;
 
 public enum TransactionType {
-    DEPOSITO("deposito"),
-    SAQUE("saque"),
-    TRANSFERENCIA("transferencia"),
-    INVESTIMENTO("investimento"),
-    RESGATE("resgate");
+    DEPOSIT("deposit"),
+    WITHDRAW("withdraw"),
+    TRANSFER("transfer"),
+    INVESTMENT("investment"),
+    REDEMPTION("redemption");
 
     private final String dbValue;
 
@@ -21,6 +21,6 @@ public enum TransactionType {
         for (TransactionType t : values()) {
             if (t.dbValue.equals(value)) return t;
         }
-        throw new IllegalArgumentException("Tipo de transacao desconhecido: " + value);
+        throw new IllegalArgumentException("Unknown transaction type: " + value);
     }
 }
