@@ -26,8 +26,7 @@ Construído com **Spring Boot 3 + Thymeleaf + PostgreSQL**, totalmente empacotad
 2. [Quick start](#-quick-start)
 3. [Usuários de teste](#-usuários-de-teste)
 4. [Testes](#-testes)
-5. [Entrega 2](#-entrega-2)
-6. [Documentação](#-documentação)
+5. [Documentação](#-documentação)
 
 ---
 
@@ -95,23 +94,7 @@ Os seeds (em `V2__seed_data.sql`) criam 5 usuários, **todos com a senha `senha1
 mvn test
 ```
 
-**89 testes unitários puros**, todos JUnit 5 sem dependências externas. Plano completo de expansão (fakes, integração com Testcontainers, técnicas funcional/estrutural/mutação, inspeção Sonar) na seção [Entrega 2](#-entrega-2).
-
----
-
-## 🚧 Entrega 2
-
-Planejada e dividida em 7 partes, cada uma com seu próprio documento:
-
-| Parte | Documento | Escopo |
-|---|---|---|
-| **A** | [docs/TESTES_UNITARIOS.md](docs/TESTES_UNITARIOS.md) | Testes unitários com fakes (sem Mockito) |
-| **B** | [docs/TESTES_INTEGRACAO.md](docs/TESTES_INTEGRACAO.md) | Testes de integração com Testcontainers e Postgres real |
-| **C** | [docs/QUALIDADE_ISO25010.md](docs/QUALIDADE_ISO25010.md) | Avaliação de qualidade pela ISO 25010 |
-| **D** | [docs/TECNICAS_TESTE.md](docs/TECNICAS_TESTE.md) | Técnicas funcional, estrutural (≥80% arestas) e mutação (≥80% escore) |
-| **E** | [docs/INSPECAO_CODIGO.md](docs/INSPECAO_CODIGO.md) | Inspeção do código-fonte com SonarQube |
-| **F** | [docs/REQUISITOS_OBRIGATORIOS.md](docs/REQUISITOS_OBRIGATORIOS.md) | Checklist de conformidade com os requisitos obrigatórios |
-| **G** | [docs/RESPONSABILIDADES.md](docs/RESPONSABILIDADES.md) | Distribuição de responsabilidades por membro do grupo |
+**89 testes unitários puros**, todos JUnit 5 sem dependências externas.
 
 ---
 
@@ -122,7 +105,6 @@ Planejada e dividida em 7 partes, cada uma com seu próprio documento:
 | [docs/SETUP.md](docs/SETUP.md) | Instalação de Docker (macOS/Linux/Windows), comandos úteis, troubleshooting |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Diagrama de fluxo, camadas, schema do banco, decisões de design e segurança |
 | [docs/RESPONSABILIDADES.md](docs/RESPONSABILIDADES.md) | Membros do grupo, contribuições da Entrega 1 e distribuição da Entrega 2 |
-| [Entrega 2 (A–G)](#-entrega-2) | Sete documentos de planejamento da Entrega 2 |
 
 ---
 
