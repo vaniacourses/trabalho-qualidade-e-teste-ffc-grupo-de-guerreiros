@@ -45,15 +45,15 @@ O **Banco Digital** simula as operações fundamentais de um banco para fins aca
 
 | Fluxo | Descrição | Endpoint |
 |---|---|---|
-| 🔐 **Cadastro** | Cria um novo usuário + conta zerada (atomicamente). Senha armazenada como hash BCrypt. | `GET / POST /cadastro` |
+| 🔐 **Cadastro** | Cria um novo usuário + conta zerada (atomicamente). Senha armazenada como hash BCrypt. | `GET / POST /signup` |
 | 🔑 **Login** | Autenticação via form (Spring Security + CSRF + session fixation protection). | `GET / POST /login` |
-| 🏠 **Painel** | Página inicial com atalhos para todos os serviços. | `GET /painel` |
-| 💰 **Saldo** | Consulta o saldo atual da conta. | `GET /saldo` |
-| ⬇ **Depósito** | Credita um valor na conta (registra uma transação). | `GET / POST /deposito` |
-| ⬆ **Saque** | Debita um valor (limite diário de R$ 10.000 por operação). | `GET / POST /saque` |
-| ↔ **Transferência** | Movimenta saldo para outra conta pelo número (`C00001`, ...). Atômica com row-level locking. | `GET / POST /transferencia` |
-| 📈 **Investimento** | Aplica/Resgata valores num investimento de **1 % de juros compostos por minuto** (lazy update). | `GET / POST /investimento` |
-| 📜 **Extrato** | Lista todas as transações da conta com cor por tipo e formatação BR. | `GET /extrato` |
+| 🏠 **Painel** | Página inicial com atalhos para todos os serviços. | `GET /dashboard` |
+| 💰 **Saldo** | Consulta o saldo atual da conta. | `GET /balance` |
+| ⬇ **Depósito** | Credita um valor na conta (registra uma transação). | `GET / POST /deposit` |
+| ⬆ **Saque** | Debita um valor (limite diário de R$ 10.000 por operação). | `GET / POST /withdraw` |
+| ↔ **Transferência** | Movimenta saldo para outra conta pelo número (`C00001`, ...). Atômica com row-level locking. | `GET / POST /transfer` |
+| 📈 **Investimento** | Aplica/Resgata valores num investimento de **1 % de juros compostos por minuto** (lazy update). | `GET / POST /investment` |
+| 📜 **Extrato** | Lista todas as transações da conta com cor por tipo e formatação BR. | `GET /statement` |
 | 🚪 **Logout** | Encerra a sessão. | `POST /logout` |
 
 ### Regras de negócio embutidas
@@ -63,7 +63,7 @@ O **Banco Digital** simula as operações fundamentais de um banco para fins aca
 - 🛡️ CSRF token automático em todos os forms (Spring Security).
 - 🧾 Transações JDBC com `SELECT ... FOR UPDATE` para serializar acesso concorrente.
 - 🆔 Números de conta gerados via `SEQUENCE` do Postgres (`C00001`, `C00002`, ... sem colisão).
-- 🚫 Validações centralizadas em `com.bancodigital.shared.Mensagens` — mesma string em validação e UI.
+- 🚫 Validações centralizadas em `com.bancodigital.shared.Messages` — mesma string em validação e UI.
 
 ---
 
@@ -199,12 +199,12 @@ Os seeds (em `V2__seed_data.sql`) criam 5 usuários, **todos com a senha `senha1
 │   │   ├── java/com/bancodigital/
 │   │   │   ├── BancodigitalApplication.java
 │   │   │   ├── config/             # SecurityConfig, AppConfig, HomeController
-│   │   │   ├── shared/             # Mensagens, Money, DomainException, GlobalExceptionHandler
-│   │   │   ├── login/              # Usuario, UsuarioRepository (interface + Jdbc), CustomUserDetailsService
-│   │   │   ├── cadastro/           # CadastroForm, CadastroService, CadastroController
-│   │   │   ├── conta/              # Conta, ContaRepository, ContaService + 4 controllers
-│   │   │   ├── transacao/          # TipoTransacao, Transacao, TransacaoRepository, ExtratoLinha, ExtratoController
-│   │   │   └── investimento/       # Investimento, InvestimentoRepository, InvestimentoService, controller
+│   │   │   ├── shared/             # Messages, Money, DomainException, GlobalExceptionHandler
+│   │   │   ├── auth/               # User, UserRepository (interface + Jdbc), CustomUserDetailsService, CurrentUser
+│   │   │   ├── signup/             # SignupForm, SignupService, SignupController
+│   │   │   ├── account/            # Account, AccountRepository, AccountService + 4 controllers
+│   │   │   ├── transaction/        # TransactionType, Transaction, TransactionRepository, StatementLine, StatementController
+│   │   │   └── investment/         # Investment, InvestmentRepository, InvestmentService, InvestmentController
 │   │   └── resources/
 │   │       ├── application.yml             # configs default (datasource via env vars)
 │   │       ├── application-docker.yml      # overrides quando SPRING_PROFILES_ACTIVE=docker
@@ -214,10 +214,10 @@ Os seeds (em `V2__seed_data.sql`) criam 5 usuários, **todos com a senha `senha1
 │   │       ├── static/css/style.css        # estilos compartilhados
 │   │       └── templates/                  # 10 templates Thymeleaf
 │   │           ├── fragments/layout.html   # topbar + alertas (reuso)
-│   │           ├── login.html, cadastro.html, painel.html
-│   │           ├── saldo.html, saque.html, deposito.html
-│   │           ├── transferencia.html, extrato.html
-│   │           └── investimento.html
+│   │           ├── login.html, signup.html, dashboard.html
+│   │           ├── balance.html, withdraw.html, deposit.html
+│   │           ├── transfer.html, statement.html
+│   │           └── investment.html
 │   └── test/java/com/bancodigital/         # 89 testes unitários puros JUnit 5
 │
 └── docs/
@@ -241,11 +241,11 @@ docker compose exec app sh -c "echo 'use mvn no host ou containerize'"
 | Suite | Testes | Componente coberto |
 |---|---|---|
 | `MoneyTest` | 16 | helpers de `BigDecimal` (parse, normalize, isPositive, format) |
-| `TipoTransacaoTest` | 9 | enum + `fromDbValue` |
-| `ExtratoLinhaTest` | 15 | factory `de()`, `corPara`, `descricaoPara` |
-| `CadastroServiceTest` | 12 | `validarCadastro` (regex e-mail, length de senha, edge cases) |
-| `ContaServiceTest` | 23 | `validaSaque` / `validarDeposito` / `validarTransferencia` |
-| `InvestimentoServiceTest` | 14 | `calcularValorComJuros` (juros compostos), `validarOperacao` |
+| `TransactionTypeTest` | 9 | enum + `fromDbValue` |
+| `StatementLineTest` | 15 | factory `de()`, `colorFor`, `descriptionFor` |
+| `SignupServiceTest` | 12 | `validateSignup` (regex e-mail, length de senha, edge cases) |
+| `AccountServiceTest` | 23 | `validateWithdraw` / `validateDeposit` / `validateTransfer` |
+| `InvestmentServiceTest` | 14 | `calculateInterest` (juros compostos), `validateOperation` |
 
 > Testes que exigem isolamento de dependências via mocks/fakes e testes de integração com Postgres real ficam para a **próxima entrega**.
 
@@ -259,10 +259,10 @@ Esta PR fecha as seguintes issues do GitHub:
 |---|---|---|
 | **#4** | Migrar Derby → PostgreSQL com Docker Compose | [`docker-compose.yml`](docker-compose.yml), [`V1__init_schema.sql`](src/main/resources/db/migration/V1__init_schema.sql), [`application.yml`](src/main/resources/application.yml) |
 | **#12** | Senha em texto plano no banco | `BCryptPasswordEncoder` em `SecurityConfig`, hashes no seed |
-| **#13** | Cadastro pode deixar usuário órfão sem conta | [`CadastroService.cadastrar()`](src/main/java/com/bancodigital/cadastro/CadastroService.java) com `@Transactional` + FK `usuario_id NOT NULL` |
-| **#14** | Cadastro pode gerar números de conta duplicados | `UNIQUE(numero)` + `CREATE SEQUENCE conta_numero_seq` (sem `Math.random`) |
-| **#15** | `lazyUpdate` de investimento pode duplicar em concorrência | `UNIQUE(usuario_id)` em `investimento` + `INSERT ... ON CONFLICT DO NOTHING` no `ensureExists` |
-| **#16** | Mensagem 'valor inválido' inconsistente | [`Mensagens.java`](src/main/java/com/bancodigital/shared/Mensagens.java) centraliza todas as strings |
+| **#13** | Cadastro pode deixar usuário órfão sem conta | [`SignupService.register()`](src/main/java/com/bancodigital/signup/SignupService.java) com `@Transactional` + FK `user_id NOT NULL` |
+| **#14** | Cadastro pode gerar números de conta duplicados | `UNIQUE(number)` + `CREATE SEQUENCE account_number_seq` (sem `Math.random`) |
+| **#15** | `lazyUpdate` de investimento pode duplicar em concorrência | `UNIQUE(user_id)` em `investments` + `INSERT ... ON CONFLICT DO NOTHING` no `ensureExists` |
+| **#16** | Mensagem 'valor inválido' inconsistente | [`Messages.java`](src/main/java/com/bancodigital/shared/Messages.java) centraliza todas as strings |
 
 ---
 

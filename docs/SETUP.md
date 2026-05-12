@@ -192,8 +192,8 @@ docker compose top                   # processos rodando
 docker compose exec postgres psql -U bancodigital -d bancodigital
 # dentro do psql:
 #   \dt                              -- listar tabelas
-#   SELECT * FROM usuario;
-#   SELECT id, numero, saldo FROM conta;
+#   SELECT * FROM users;
+#   SELECT id, number, balance FROM accounts;
 #   \q                               -- sair
 
 # 🔄 Rebuildar só a app (após mudar código Java/templates)
