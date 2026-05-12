@@ -23,12 +23,7 @@ Construído com **Spring Boot 3 + Thymeleaf + PostgreSQL**, totalmente empacotad
 ## 📑 Sumário
 
 1. [O que o projeto faz](#-o-que-o-projeto-faz)
-2. [Quick start](#-quick-start)
-3. [Usuários de teste](#-usuários-de-teste)
-4. [Testes](#-testes)
-5. [Issues resolvidas nesta entrega](#-issues-resolvidas-nesta-entrega)
-6. [Entrega 2](#-entrega-2)
-7. [Documentação](#-documentação)
+2. [Documentação](#-documentação)
 
 ---
 
@@ -55,90 +50,13 @@ Stack completa, camadas, schema do banco e decisões de design em [docs/ARCHITEC
 
 ---
 
-## 🚀 Quick start
-
-> Só precisa de **Docker** instalado. Java, Maven e Postgres rodam em containers.
-
-```bash
-git clone <url-do-repo>
-cd trabalho-qualidade-e-teste-ffc-grupo-de-guerreiros
-docker compose up -d --build
-```
-
-| Serviço | URL |
-|---|---|
-| 🏦 **Aplicação** | <http://localhost:8080> (login `joao@email.com` / `senha123`) |
-| 🗄 **Adminer** | <http://localhost:8081> (server `postgres`, base/user/pass `bancodigital`) |
-
-Guia completo de instalação (macOS/Linux/Windows, comandos úteis, troubleshooting) em [docs/SETUP.md](docs/SETUP.md).
-
----
-
-## 👥 Usuários de teste
-
-Os seeds (em `V2__seed_data.sql`) criam 5 usuários, **todos com a senha `senha123`** (já hashed com BCrypt no banco):
-
-| E-mail | Conta | Saldo inicial | Histórico |
-|---|---|---|---|
-| `joao@email.com` | `C00001` | R$ 1.500,00 | 1 depósito, 1 saque, 1 transferência recebida |
-| `maria@email.com` | `C00002` | R$ 9.999,99 | 1 depósito, investimento ativo de R$ 500 |
-| `pedro@email.com` | `C00003` | R$ 0,00 | conta nova, sem histórico (útil para testar saldo insuficiente) |
-| `ana@email.com` | `C00004` | R$ 25.000,00 | depósito, saque, 2 transferências enviadas, investimento de R$ 1.500 |
-| `carlos@email.com` | `C00005` | R$ 100,00 | depósito, transferência recebida |
-
-> 💡 **Resetar tudo aos seeds**: `docker compose down -v && docker compose up -d` (apaga o volume `pgdata`, Flyway re-aplica V1 e V2 do zero).
-
----
-
-## 🧪 Testes
-
-```bash
-mvn test
-```
-
-**89 testes unitários puros**, todos JUnit 5 sem dependências externas. Plano completo de expansão (fakes, integração com Testcontainers, técnicas funcional/estrutural/mutação, inspeção Sonar) na seção [Entrega 2](#-entrega-2).
-
----
-
-## ✅ Issues resolvidas nesta entrega
-
-Esta PR fecha as seguintes issues do GitHub:
-
-| # | Título | Onde foi resolvido |
-|---|---|---|
-| **#4** | Migrar Derby → PostgreSQL com Docker Compose | [`docker-compose.yml`](docker-compose.yml), [`V1__init_schema.sql`](src/main/resources/db/migration/V1__init_schema.sql), [`application.yml`](src/main/resources/application.yml) |
-| **#12** | Senha em texto plano no banco | `BCryptPasswordEncoder` em `SecurityConfig`, hashes no seed |
-| **#13** | Cadastro pode deixar usuário órfão sem conta | [`SignupService.register()`](src/main/java/com/bancodigital/signup/SignupService.java) com `@Transactional` e FK `user_id NOT NULL` |
-| **#14** | Cadastro pode gerar números de conta duplicados | `UNIQUE(number)` e `CREATE SEQUENCE account_number_seq` (sem `Math.random`) |
-| **#15** | `lazyUpdate` de investimento pode duplicar em concorrência | `UNIQUE(user_id)` em `investments` e `INSERT ... ON CONFLICT DO NOTHING` no `ensureExists` |
-| **#16** | Mensagem 'valor inválido' inconsistente | [`Messages.java`](src/main/java/com/bancodigital/shared/Messages.java) centraliza todas as strings |
-
----
-
-## 🚧 Entrega 2
-
-Planejada e dividida em 7 partes, cada uma com seu próprio documento:
-
-| Parte | Documento | Escopo |
-|---|---|---|
-| **A** | [docs/TESTES_UNITARIOS.md](docs/TESTES_UNITARIOS.md) | Testes unitários com fakes (sem Mockito) |
-| **B** | [docs/TESTES_INTEGRACAO.md](docs/TESTES_INTEGRACAO.md) | Testes de integração com Testcontainers e Postgres real |
-| **C** | [docs/QUALIDADE_ISO25010.md](docs/QUALIDADE_ISO25010.md) | Avaliação de qualidade pela ISO 25010 |
-| **D** | [docs/TECNICAS_TESTE.md](docs/TECNICAS_TESTE.md) | Técnicas funcional, estrutural (≥80% arestas) e mutação (≥80% escore) |
-| **E** | [docs/INSPECAO_CODIGO.md](docs/INSPECAO_CODIGO.md) | Inspeção do código-fonte com SonarQube |
-| **F** | [docs/REQUISITOS_OBRIGATORIOS.md](docs/REQUISITOS_OBRIGATORIOS.md) | Checklist de conformidade com os requisitos obrigatórios |
-| **G** | [docs/RESPONSABILIDADES.md](docs/RESPONSABILIDADES.md) | Distribuição de responsabilidades por membro do grupo |
-
----
-
 ## 📚 Documentação
 
 | Documento | Conteúdo |
 |---|---|
-| [docs/SETUP.md](docs/SETUP.md) | Instalação de Docker (macOS/Linux/Windows), comandos úteis, troubleshooting |
+| [docs/SETUP.md](docs/SETUP.md) | Como rodar o projeto, usuários de teste, comandos úteis e troubleshooting |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Diagrama de fluxo, camadas, schema do banco, decisões de design e segurança |
 | [docs/RESPONSABILIDADES.md](docs/RESPONSABILIDADES.md) | Membros do grupo, contribuições da Entrega 1 e distribuição da Entrega 2 |
-| [Entrega 2 (A–G)](#-entrega-2) | Sete documentos de planejamento da Entrega 2 |
 
 ---
 
