@@ -19,11 +19,11 @@ public class BalanceController {
         this.currentUser = currentUser;
     }
 
-    @GetMapping("/saldo")
+    @GetMapping("/balance")
     public String balance(@AuthenticationPrincipal UserDetails principal, Model model) {
         var user = currentUser.required(principal);
         Account account = accountService.getAccount(user.id());
-        model.addAttribute("conta", account);
-        return "saldo";
+        model.addAttribute("account", account);
+        return "balance";
     }
 }

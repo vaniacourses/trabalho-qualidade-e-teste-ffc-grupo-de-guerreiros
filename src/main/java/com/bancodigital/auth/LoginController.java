@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class LoginController {
 
     @GetMapping("/login")
-    public String loginForm(@RequestParam(value = "erro", required = false) String erro,
+    public String loginForm(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
-                            @RequestParam(value = "cadastro", required = false) String cadastro,
+                            @RequestParam(value = "signup", required = false) String signup,
                             Model model) {
-        if (erro != null) model.addAttribute("erro", "E-mail ou senha inválidos.");
-        if (logout != null) model.addAttribute("mensagem", "Sessão encerrada.");
-        if (cadastro != null) model.addAttribute("mensagem", "Cadastro realizado. Faça login para continuar.");
+        if (error != null) model.addAttribute("error", "E-mail ou senha inválidos.");
+        if (logout != null) model.addAttribute("message", "Sessão encerrada.");
+        if (signup != null) model.addAttribute("message", "Cadastro realizado. Faça login para continuar.");
         return "login";
     }
 }

@@ -19,16 +19,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/cadastro", "/css/**", "/js/**", "/actuator/health").permitAll()
+                .requestMatchers("/login", "/signup", "/css/**", "/js/**", "/actuator/health").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .usernameParameter("email")
-                .passwordParameter("senha")
-                .defaultSuccessUrl("/painel", true)
-                .failureUrl("/login?erro")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/dashboard", true)
+                .failureUrl("/login?error")
                 .permitAll()
             )
             .logout(logout -> logout

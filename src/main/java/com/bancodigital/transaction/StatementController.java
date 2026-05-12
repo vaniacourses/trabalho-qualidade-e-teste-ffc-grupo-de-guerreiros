@@ -27,7 +27,7 @@ public class StatementController {
         this.currentUser = currentUser;
     }
 
-    @GetMapping("/extrato")
+    @GetMapping("/statement")
     public String statement(@AuthenticationPrincipal UserDetails principal, Model model) {
         var user = currentUser.required(principal);
         Account account = accountService.getAccount(user.id());
@@ -35,8 +35,8 @@ public class StatementController {
         List<StatementLine> lines = transactions.stream()
                 .map(t -> StatementLine.from(t, account.id()))
                 .toList();
-        model.addAttribute("conta", account);
-        model.addAttribute("linhas", lines);
-        return "extrato";
+        model.addAttribute("account", account);
+        model.addAttribute("lines", lines);
+        return "statement";
     }
 }

@@ -27,33 +27,33 @@ public class InvestmentController {
         this.currentUser = currentUser;
     }
 
-    @GetMapping("/investimento")
+    @GetMapping("/investment")
     public String form(@AuthenticationPrincipal UserDetails principal, Model model) {
         var user = currentUser.required(principal);
         BigDecimal amount = investmentService.query(user.id());
-        model.addAttribute("valorAtual", amount);
-        return "investimento";
+        model.addAttribute("currentAmount", amount);
+        return "investment";
     }
 
-    @PostMapping("/investimento")
+    @PostMapping("/investment")
     public String submit(@AuthenticationPrincipal UserDetails principal,
                          @RequestParam("op") String op,
-                         @RequestParam("valor") String rawAmount,
+                         @RequestParam("amount") String rawAmount,
                          RedirectAttributes ra) {
         var user = currentUser.required(principal);
         BigDecimal amount = Money.parseOrNull(rawAmount);
         if (amount == null) {
-            ra.addFlashAttribute("erro", Messages.INVALID_AMOUNT);
-            return "redirect:/investimento";
+            ra.addFlashAttribute("error", Messages.INVALID_AMOUNT);
+            return "redirect:/investment";
         }
         try {
             investmentService.execute(user.id(), op, amount);
-            ra.addFlashAttribute("mensagem", "investir".equalsIgnoreCase(op)
+            ra.addFlashAttribute("message", "investir".equalsIgnoreCase(op)
                     ? Messages.INVESTMENT_SUCCESS
                     : Messages.REDEMPTION_SUCCESS);
         } catch (DomainException e) {
-            ra.addFlashAttribute("erro", e.getMessage());
+            ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/investimento";
+        return "redirect:/investment";
     }
 }

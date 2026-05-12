@@ -11,15 +11,15 @@
 <body>
 
 <header class="topbar" th:fragment="topbar" sec:authorize="isAuthenticated()">
-    <a class="brand" th:href="@{/painel}">Banco Digital</a>
+    <a class="brand" th:href="@{/dashboard}">Banco Digital</a>
     <nav>
-        <a th:href="@{/painel}">Painel</a>
-        <a th:href="@{/saldo}">Saldo</a>
-        <a th:href="@{/deposito}">Depósito</a>
-        <a th:href="@{/saque}">Saque</a>
-        <a th:href="@{/transferencia}">Transferência</a>
-        <a th:href="@{/investimento}">Investimento</a>
-        <a th:href="@{/extrato}">Extrato</a>
+        <a th:href="@{/dashboard}">Painel</a>
+        <a th:href="@{/balance}">Saldo</a>
+        <a th:href="@{/deposit}">Depósito</a>
+        <a th:href="@{/withdraw}">Saque</a>
+        <a th:href="@{/transfer}">Transferência</a>
+        <a th:href="@{/investment}">Investimento</a>
+        <a th:href="@{/statement}">Extrato</a>
         <form th:action="@{/logout}" method="post" style="margin:0;">
             <button type="submit">Sair</button>
         </form>
@@ -27,8 +27,8 @@
 </header>
 
 <div th:fragment="alertas" class="alerts">
-    <p th:if="${mensagem}" class="alert success" th:text="${mensagem}"></p>
-    <p th:if="${erro}"     class="alert error"   th:text="${erro}"></p>
+    <p th:if="${message}" class="alert success" th:text="${message}"></p>
+    <p th:if="${error}"   class="alert error"   th:text="${error}"></p>
 </div>
 
 </body>

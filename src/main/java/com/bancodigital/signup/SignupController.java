@@ -17,23 +17,23 @@ public class SignupController {
         this.service = service;
     }
 
-    @GetMapping("/cadastro")
+    @GetMapping("/signup")
     public String form(Model model) {
-        if (!model.containsAttribute("cadastroForm")) {
-            model.addAttribute("cadastroForm", new SignupForm());
+        if (!model.containsAttribute("signupForm")) {
+            model.addAttribute("signupForm", new SignupForm());
         }
-        return "cadastro";
+        return "signup";
     }
 
-    @PostMapping("/cadastro")
-    public String submit(@ModelAttribute("cadastroForm") SignupForm cadastroForm, Model model) {
+    @PostMapping("/signup")
+    public String submit(@ModelAttribute("signupForm") SignupForm signupForm, Model model) {
         try {
-            service.register(cadastroForm);
+            service.register(signupForm);
         } catch (DomainException e) {
-            model.addAttribute("erro", e.getMessage());
-            model.addAttribute("cadastroForm", cadastroForm);
-            return "cadastro";
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("signupForm", signupForm);
+            return "signup";
         }
-        return "redirect:/login?cadastro";
+        return "redirect:/login?signup";
     }
 }

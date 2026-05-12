@@ -27,30 +27,30 @@ public class DepositController {
         this.currentUser = currentUser;
     }
 
-    @GetMapping("/deposito")
+    @GetMapping("/deposit")
     public String form(@AuthenticationPrincipal UserDetails principal, Model model) {
         var user = currentUser.required(principal);
         Account account = accountService.getAccount(user.id());
-        model.addAttribute("conta", account);
-        return "deposito";
+        model.addAttribute("account", account);
+        return "deposit";
     }
 
-    @PostMapping("/deposito")
+    @PostMapping("/deposit")
     public String submit(@AuthenticationPrincipal UserDetails principal,
-                         @RequestParam("valor") String rawAmount,
+                         @RequestParam("amount") String rawAmount,
                          RedirectAttributes ra) {
         var user = currentUser.required(principal);
         BigDecimal amount = Money.parseOrNull(rawAmount);
         if (amount == null) {
-            ra.addFlashAttribute("erro", Messages.INVALID_AMOUNT);
-            return "redirect:/deposito";
+            ra.addFlashAttribute("error", Messages.INVALID_AMOUNT);
+            return "redirect:/deposit";
         }
         try {
             accountService.deposit(user.id(), amount);
-            ra.addFlashAttribute("mensagem", Messages.DEPOSIT_SUCCESS);
+            ra.addFlashAttribute("message", Messages.DEPOSIT_SUCCESS);
         } catch (DomainException e) {
-            ra.addFlashAttribute("erro", e.getMessage());
+            ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/deposito";
+        return "redirect:/deposit";
     }
 }

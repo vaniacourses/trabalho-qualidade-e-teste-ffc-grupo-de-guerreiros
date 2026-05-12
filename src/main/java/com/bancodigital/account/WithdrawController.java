@@ -27,30 +27,30 @@ public class WithdrawController {
         this.currentUser = currentUser;
     }
 
-    @GetMapping("/saque")
+    @GetMapping("/withdraw")
     public String form(@AuthenticationPrincipal UserDetails principal, Model model) {
         var user = currentUser.required(principal);
         Account account = accountService.getAccount(user.id());
-        model.addAttribute("conta", account);
-        return "saque";
+        model.addAttribute("account", account);
+        return "withdraw";
     }
 
-    @PostMapping("/saque")
+    @PostMapping("/withdraw")
     public String submit(@AuthenticationPrincipal UserDetails principal,
-                         @RequestParam("valor") String rawAmount,
+                         @RequestParam("amount") String rawAmount,
                          RedirectAttributes ra) {
         var user = currentUser.required(principal);
         BigDecimal amount = Money.parseOrNull(rawAmount);
         if (amount == null) {
-            ra.addFlashAttribute("erro", Messages.INVALID_AMOUNT);
-            return "redirect:/saque";
+            ra.addFlashAttribute("error", Messages.INVALID_AMOUNT);
+            return "redirect:/withdraw";
         }
         try {
             accountService.withdraw(user.id(), amount);
-            ra.addFlashAttribute("mensagem", Messages.WITHDRAW_SUCCESS);
+            ra.addFlashAttribute("message", Messages.WITHDRAW_SUCCESS);
         } catch (DomainException e) {
-            ra.addFlashAttribute("erro", e.getMessage());
+            ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/saque";
+        return "redirect:/withdraw";
     }
 }

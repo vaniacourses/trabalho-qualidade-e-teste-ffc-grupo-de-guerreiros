@@ -13,14 +13,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DomainException.class)
     public String handleDomain(DomainException ex, RedirectAttributes ra) {
-        ra.addFlashAttribute("erro", ex.getMessage());
-        return "redirect:/painel";
+        ra.addFlashAttribute("error", ex.getMessage());
+        return "redirect:/dashboard";
     }
 
     @ExceptionHandler(Exception.class)
     public String handleAny(Exception ex, RedirectAttributes ra) {
         log.error("Unexpected error", ex);
-        ra.addFlashAttribute("erro", "Erro inesperado. Tente novamente em instantes.");
-        return "redirect:/painel";
+        ra.addFlashAttribute("error", "Erro inesperado. Tente novamente em instantes.");
+        return "redirect:/dashboard";
     }
 }

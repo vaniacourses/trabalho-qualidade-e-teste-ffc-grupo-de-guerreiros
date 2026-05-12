@@ -15,10 +15,10 @@ public class DashboardController {
         this.userDetailsService = userDetailsService;
     }
 
-    @GetMapping("/painel")
+    @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails principal, Model model) {
         User user = userDetailsService.findByEmail(principal.getUsername());
-        model.addAttribute("nomeUsuario", user != null ? user.name() : principal.getUsername());
-        return "painel";
+        model.addAttribute("userName", user != null ? user.name() : principal.getUsername());
+        return "dashboard";
     }
 }

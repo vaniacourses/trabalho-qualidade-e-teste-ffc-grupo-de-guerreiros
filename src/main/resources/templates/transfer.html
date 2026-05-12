@@ -15,15 +15,15 @@
 
     <div class="card">
         <h1>Transferência</h1>
-        <p class="muted">Conta de origem <strong th:text="${conta.number}">C00000</strong></p>
-        <p>Saldo atual: <strong th:text="${#numbers.formatCurrency(conta.balance)}">R$ 0,00</strong></p>
+        <p class="muted">Conta de origem <strong th:text="${account.number}">C00000</strong></p>
+        <p>Saldo atual: <strong th:text="${#numbers.formatCurrency(account.balance)}">R$ 0,00</strong></p>
 
-        <form th:action="@{/transferencia}" method="post">
-            <label for="destino">Conta destino</label>
-            <input type="text" id="destino" name="destino" placeholder="C00000" required>
+        <form th:action="@{/transfer}" method="post">
+            <label for="destination">Conta destino</label>
+            <input type="text" id="destination" name="destination" placeholder="C00000" required>
 
-            <label for="valor">Valor</label>
-            <input type="number" id="valor" name="valor" min="0.01" step="0.01" required>
+            <label for="amount">Valor</label>
+            <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
 
             <button type="submit" class="primary">Transferir</button>
         </form>

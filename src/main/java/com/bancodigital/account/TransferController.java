@@ -27,31 +27,31 @@ public class TransferController {
         this.currentUser = currentUser;
     }
 
-    @GetMapping("/transferencia")
+    @GetMapping("/transfer")
     public String form(@AuthenticationPrincipal UserDetails principal, Model model) {
         var user = currentUser.required(principal);
         Account account = accountService.getAccount(user.id());
-        model.addAttribute("conta", account);
-        return "transferencia";
+        model.addAttribute("account", account);
+        return "transfer";
     }
 
-    @PostMapping("/transferencia")
+    @PostMapping("/transfer")
     public String submit(@AuthenticationPrincipal UserDetails principal,
-                         @RequestParam("destino") String destination,
-                         @RequestParam("valor") String rawAmount,
+                         @RequestParam("destination") String destination,
+                         @RequestParam("amount") String rawAmount,
                          RedirectAttributes ra) {
         var user = currentUser.required(principal);
         BigDecimal amount = Money.parseOrNull(rawAmount);
         if (amount == null) {
-            ra.addFlashAttribute("erro", Messages.INVALID_AMOUNT_OR_ACCOUNT);
-            return "redirect:/transferencia";
+            ra.addFlashAttribute("error", Messages.INVALID_AMOUNT_OR_ACCOUNT);
+            return "redirect:/transfer";
         }
         try {
             accountService.transfer(user.id(), destination, amount);
-            ra.addFlashAttribute("mensagem", Messages.TRANSFER_SUCCESS);
+            ra.addFlashAttribute("message", Messages.TRANSFER_SUCCESS);
         } catch (DomainException e) {
-            ra.addFlashAttribute("erro", e.getMessage());
+            ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/transferencia";
+        return "redirect:/transfer";
     }
 }
