@@ -91,7 +91,7 @@ investments  (id, user_id UNIQUE → users, amount CHECK >= 0, last_update)
 - **Transações**: `@Transactional` em todos os Services. `findByIdForUpdate` para serializar acesso por conta.
 - **Concorrência no Investimento**: `ON CONFLICT (user_id) DO NOTHING` no `ensureExists`, garantindo idempotência mesmo com duas requests simultâneas (fecha issue #15).
 - **Geração de número de conta**: sequence `account_number_seq` + `UNIQUE (number)` (fecha issue #14; não há mais `Math.random`).
-- **Atomicidade do cadastro**: `SignupService.register` é `@Transactional` — `INSERT users` e `INSERT accounts` ou ambos succedem, ou nenhum (fecha issue #13).
+- **Atomicidade do cadastro**: `SignupService.register` é `@Transactional`. `INSERT users` e `INSERT accounts` sucedem juntos ou nenhum dos dois é aplicado (fecha issue #13).
 - **Mensagens**: `com.bancodigital.shared.Messages` mantém uma única string por erro/sucesso (fecha issue #16). Constantes em inglês, valores user-facing em PT-BR.
 - **Valores monetários**: sempre `BigDecimal` com scale 2, `HALF_UP`.
 

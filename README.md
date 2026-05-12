@@ -26,9 +26,8 @@ Construído com **Spring Boot 3 + Thymeleaf + PostgreSQL**, totalmente empacotad
 2. [Quick start](#-quick-start)
 3. [Usuários de teste](#-usuários-de-teste)
 4. [Testes](#-testes)
-5. [Issues resolvidas nesta entrega](#-issues-resolvidas-nesta-entrega)
-6. [Entrega 2](#-entrega-2)
-7. [Documentação](#-documentação)
+5. [Entrega 2](#-entrega-2)
+6. [Documentação](#-documentação)
 
 ---
 
@@ -97,21 +96,6 @@ mvn test
 ```
 
 **89 testes unitários puros**, todos JUnit 5 sem dependências externas. Plano completo de expansão (fakes, integração com Testcontainers, técnicas funcional/estrutural/mutação, inspeção Sonar) na seção [Entrega 2](#-entrega-2).
-
----
-
-## ✅ Issues resolvidas nesta entrega
-
-Esta PR fecha as seguintes issues do GitHub:
-
-| # | Título | Onde foi resolvido |
-|---|---|---|
-| **#4** | Migrar Derby → PostgreSQL com Docker Compose | [`docker-compose.yml`](docker-compose.yml), [`V1__init_schema.sql`](src/main/resources/db/migration/V1__init_schema.sql), [`application.yml`](src/main/resources/application.yml) |
-| **#12** | Senha em texto plano no banco | `BCryptPasswordEncoder` em `SecurityConfig`, hashes no seed |
-| **#13** | Cadastro pode deixar usuário órfão sem conta | [`SignupService.register()`](src/main/java/com/bancodigital/signup/SignupService.java) com `@Transactional` e FK `user_id NOT NULL` |
-| **#14** | Cadastro pode gerar números de conta duplicados | `UNIQUE(number)` e `CREATE SEQUENCE account_number_seq` (sem `Math.random`) |
-| **#15** | `lazyUpdate` de investimento pode duplicar em concorrência | `UNIQUE(user_id)` em `investments` e `INSERT ... ON CONFLICT DO NOTHING` no `ensureExists` |
-| **#16** | Mensagem 'valor inválido' inconsistente | [`Messages.java`](src/main/java/com/bancodigital/shared/Messages.java) centraliza todas as strings |
 
 ---
 
