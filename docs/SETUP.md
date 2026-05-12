@@ -17,9 +17,10 @@ Guia completo para subir o projeto do zero, **mesmo que você nunca tenha usado 
 3. [Clonar o repositório](#-2-clonar-o-repositório)
 4. [Subir a aplicação](#-3-subir-a-aplicação)
 5. [Acessar](#-4-acessar)
-6. [Comandos úteis](#-comandos-úteis)
-7. [Resetar dados](#-resetar-dados)
-8. [Troubleshooting](#-troubleshooting)
+6. [Usuários de teste](#-usuários-de-teste)
+7. [Comandos úteis](#-comandos-úteis)
+8. [Resetar dados](#-resetar-dados)
+9. [Troubleshooting](#-troubleshooting)
 
 ---
 
@@ -168,7 +169,23 @@ Quando os 3 estiverem `Up (healthy)`, pode usar.
 | ❤️ **Health check** | <http://localhost:8080/actuator/health> | público |
 | 🐘 **PostgreSQL direto** | `localhost:5432` | `bancodigital` / `bancodigital` |
 
-Veja os [👥 usuários de teste](../README.md#-usuários-de-teste) para outras credenciais.
+Veja os [usuários de teste](#-usuários-de-teste) abaixo para outras credenciais.
+
+---
+
+## 👥 Usuários de teste
+
+Os seeds (em `V2__seed_data.sql`) criam 5 usuários, **todos com a senha `senha123`** (já hashed com BCrypt no banco):
+
+| E-mail | Conta | Saldo inicial | Histórico |
+|---|---|---|---|
+| `joao@email.com` | `C00001` | R$ 1.500,00 | 1 depósito, 1 saque, 1 transferência recebida |
+| `maria@email.com` | `C00002` | R$ 9.999,99 | 1 depósito, investimento ativo de R$ 500 |
+| `pedro@email.com` | `C00003` | R$ 0,00 | conta nova, sem histórico (útil para testar saldo insuficiente) |
+| `ana@email.com` | `C00004` | R$ 25.000,00 | depósito, saque, 2 transferências enviadas, investimento de R$ 1.500 |
+| `carlos@email.com` | `C00005` | R$ 100,00 | depósito, transferência recebida |
+
+> 💡 **Resetar tudo aos seeds**: `docker compose down -v && docker compose up -d` (apaga o volume `pgdata`, Flyway re-aplica V1 e V2 do zero).
 
 ---
 

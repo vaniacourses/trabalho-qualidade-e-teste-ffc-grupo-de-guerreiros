@@ -23,10 +23,7 @@ Construído com **Spring Boot 3 + Thymeleaf + PostgreSQL**, totalmente empacotad
 ## 📑 Sumário
 
 1. [O que o projeto faz](#-o-que-o-projeto-faz)
-2. [Quick start](#-quick-start)
-3. [Usuários de teste](#-usuários-de-teste)
-4. [Testes](#-testes)
-5. [Documentação](#-documentação)
+2. [Documentação](#-documentação)
 
 ---
 
@@ -53,56 +50,11 @@ Stack completa, camadas, schema do banco e decisões de design em [docs/ARCHITEC
 
 ---
 
-## 🚀 Quick start
-
-> Só precisa de **Docker** instalado. Java, Maven e Postgres rodam em containers.
-
-```bash
-git clone <url-do-repo>
-cd trabalho-qualidade-e-teste-ffc-grupo-de-guerreiros
-docker compose up -d --build
-```
-
-| Serviço | URL |
-|---|---|
-| 🏦 **Aplicação** | <http://localhost:8080> (login `joao@email.com` / `senha123`) |
-| 🗄 **Adminer** | <http://localhost:8081> (server `postgres`, base/user/pass `bancodigital`) |
-
-Guia completo de instalação (macOS/Linux/Windows, comandos úteis, troubleshooting) em [docs/SETUP.md](docs/SETUP.md).
-
----
-
-## 👥 Usuários de teste
-
-Os seeds (em `V2__seed_data.sql`) criam 5 usuários, **todos com a senha `senha123`** (já hashed com BCrypt no banco):
-
-| E-mail | Conta | Saldo inicial | Histórico |
-|---|---|---|---|
-| `joao@email.com` | `C00001` | R$ 1.500,00 | 1 depósito, 1 saque, 1 transferência recebida |
-| `maria@email.com` | `C00002` | R$ 9.999,99 | 1 depósito, investimento ativo de R$ 500 |
-| `pedro@email.com` | `C00003` | R$ 0,00 | conta nova, sem histórico (útil para testar saldo insuficiente) |
-| `ana@email.com` | `C00004` | R$ 25.000,00 | depósito, saque, 2 transferências enviadas, investimento de R$ 1.500 |
-| `carlos@email.com` | `C00005` | R$ 100,00 | depósito, transferência recebida |
-
-> 💡 **Resetar tudo aos seeds**: `docker compose down -v && docker compose up -d` (apaga o volume `pgdata`, Flyway re-aplica V1 e V2 do zero).
-
----
-
-## 🧪 Testes
-
-```bash
-mvn test
-```
-
-**89 testes unitários puros**, todos JUnit 5 sem dependências externas.
-
----
-
 ## 📚 Documentação
 
 | Documento | Conteúdo |
 |---|---|
-| [docs/SETUP.md](docs/SETUP.md) | Instalação de Docker (macOS/Linux/Windows), comandos úteis, troubleshooting |
+| [docs/SETUP.md](docs/SETUP.md) | Como rodar o projeto, usuários de teste, comandos úteis e troubleshooting |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Diagrama de fluxo, camadas, schema do banco, decisões de design e segurança |
 | [docs/RESPONSABILIDADES.md](docs/RESPONSABILIDADES.md) | Membros do grupo, contribuições da Entrega 1 e distribuição da Entrega 2 |
 
