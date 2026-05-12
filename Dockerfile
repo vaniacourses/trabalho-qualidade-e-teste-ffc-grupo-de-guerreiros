@@ -5,13 +5,15 @@ RUN mvn -q -B dependency:go-offline
 COPY src ./src
 RUN mvn -q -B -DskipTests package
 
-FROM eclipse-temurin:17-jre-alpine
-RUN addgroup -S app && adduser -S app -G app
+FROM eclipse-temurin:17-jre
+RUN groupadd -r app && useradd -r -g app app \
+ && apt-get update && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /workspace/target/*.jar app.jar
 RUN chown -R app:app /app
 USER app
 EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget -qO- http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD curl -fsS http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
