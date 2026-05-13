@@ -23,7 +23,8 @@ Construído com **Spring Boot 3 + Thymeleaf + PostgreSQL**, totalmente empacotad
 ## 📑 Sumário
 
 1. [O que o projeto faz](#-o-que-o-projeto-faz)
-2. [Documentação](#-documentação)
+2. [Testes](#-testes)
+3. [Documentação](#-documentação)
 
 ---
 
@@ -47,6 +48,61 @@ O **Banco Digital** simula as operações fundamentais de um banco para fins aca
 | 🚪 **Logout** | Encerra a sessão. | `POST /logout` |
 
 Stack completa, camadas, schema do banco e decisões de design em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
+## 🧪 Testes
+
+O projeto tem duas suítes complementares:
+
+| Tipo | O que faz | Velocidade | Banco |
+|---|---|---|---|
+| **Unitários (Mockito)** | Testa cada `Service` isolando deps com `@Mock`/`@InjectMocks`. Não sobe Spring. | ~ms | nenhum |
+| **Integração** | `@SpringBootTest` + `MockMvc` exercitando endpoints reais (HTTP → Service → Repo → Postgres). | ~segundos | Postgres real |
+
+### Pré-requisitos
+
+1. **Docker Compose subido** (para o Postgres dos testes de integração):
+   ```bash
+   docker compose up -d postgres
+   ```
+2. **Banco de testes criado** (uma vez só):
+   ```bash
+   docker exec bancodigital-postgres psql -U bancodigital -d postgres -c "CREATE DATABASE bancodigital_test"
+   ```
+
+### Como rodar
+
+```bash
+# Tudo
+mvn test
+
+# Só unitários
+mvn -Dtest='*ServiceTest,*Test' -DexcludedGroups=integration test
+
+# Só integração (precisa do Postgres up)
+mvn -Dtest='*IntegrationTest' test
+
+# Uma classe ou método específico
+mvn -Dtest='InvestmentServiceTest' test
+mvn -Dtest='SignupIntegrationTest#signupEndpointCreatesUserAndAccount' test
+```
+
+### Cobertura atual
+
+| Suite | Casos | Tipo |
+|---|---|---|
+| [`MoneyTest`](src/test/java/com/bancodigital/shared/money/MoneyTest.java) | 16 | unitário puro |
+| [`TransactionTypeTest`](src/test/java/com/bancodigital/transaction/TransactionTypeTest.java) | 9 | unitário puro |
+| [`StatementLineTest`](src/test/java/com/bancodigital/transaction/StatementLineTest.java) | 15 | unitário puro |
+| [`AccountServiceTest`](src/test/java/com/bancodigital/account/AccountServiceTest.java) | 23 | unitário (validações puras) |
+| [`SignupServiceTest`](src/test/java/com/bancodigital/signup/SignupServiceTest.java) | 18 | unitário (Mockito para `register`) |
+| [`InvestmentServiceTest`](src/test/java/com/bancodigital/investment/InvestmentServiceTest.java) | 25 | unitário (Mockito para `query`/`execute`) |
+| [`SignupIntegrationTest`](src/test/java/com/bancodigital/integration/SignupIntegrationTest.java) | 3 | integração (MockMvc + Postgres) |
+| [`InvestmentIntegrationTest`](src/test/java/com/bancodigital/integration/InvestmentIntegrationTest.java) | 3 | integração (MockMvc + Postgres) |
+| **Total** | **112** | |
+
+Estratégia detalhada, padrões e cenários planejados para os outros domínios em [docs/TESTES_UNITARIOS.md](docs/TESTES_UNITARIOS.md) e [docs/TESTES_INTEGRACAO.md](docs/TESTES_INTEGRACAO.md).
 
 ---
 

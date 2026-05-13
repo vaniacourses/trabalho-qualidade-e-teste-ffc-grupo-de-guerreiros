@@ -1,12 +1,20 @@
-# Plano — Testes de integração com PostgreSQL real
+# Testes de integração com PostgreSQL real
 
-> Escopo da **Entrega 2 (parte B)**. Foco: validar SQL, migrations Flyway, constraints, transações e locking contra um **Postgres real**, usando **Testcontainers**. Cobre o que os fakes da [parte A](TESTES_UNITARIOS.md) não conseguem ver: SQL malformado, FK violadas, `ON CONFLICT`, `FOR UPDATE`, sequência de números de conta, fuso horário no `OffsetDateTime`.
+> Escopo da **Entrega 2 (parte B)**. Foco: validar SQL, migrations Flyway, constraints, transações e locking contra um **Postgres real**. Cobre o que os mocks da [parte A](TESTES_UNITARIOS.md) não conseguem ver: SQL malformado, FK violadas, `ON CONFLICT`, `FOR UPDATE`, sequência de números de conta, fuso horário no `OffsetDateTime`.
+
+## Status
+
+- ✅ **Investment endpoint**: 3 casos via `MockMvc` + Postgres real — [`InvestmentIntegrationTest`](../src/test/java/com/bancodigital/integration/InvestmentIntegrationTest.java)
+- ✅ **Signup endpoint**: 3 casos via `MockMvc` + Postgres real — [`SignupIntegrationTest`](../src/test/java/com/bancodigital/integration/SignupIntegrationTest.java)
+- ✅ **Infraestrutura**: [`AbstractIntegrationTest`](../src/test/java/com/bancodigital/integration/AbstractIntegrationTest.java) com `@SpringBootTest` + `MockMvc` + `JdbcTemplate` + TRUNCATE em `@BeforeEach`
+- 🚧 **Account endpoints** (`deposit`/`withdraw`/`transfer`), **Statement**: pendentes
+- 🚧 **Auth flow** (login, logout, CSRF, sessão): pendente
 
 ---
 
 ## 1. Por que integração?
 
-Os fakes da parte A simulam o repositório em memória — não pegam erros como:
+Os mocks da parte A simulam o repositório em memória — não pegam erros como:
 
 - Coluna renomeada na migration mas não no `SELECT`.
 - `INSERT` que viola `NOT NULL` ou FK.
@@ -15,49 +23,63 @@ Os fakes da parte A simulam o repositório em memória — não pegam erros como
 - `OffsetDateTime` com fuso diferente entre Java e Postgres.
 - Sequence `account_number_seq` desalinhada com `UNIQUE(number)`.
 
-Esses bugs só aparecem com o banco real. Testcontainers sobe um Postgres 16-alpine descartável por suite.
+Esses bugs só aparecem com o banco real.
 
 ---
 
-## 2. Stack proposta
+## 2. Stack adotada
 
-| Componente | Versão | Justificativa |
-|---|---|---|
-| Testcontainers | 1.20.x | API estável, integração nativa com Spring Boot |
-| `org.testcontainers:postgresql` | 1.20.x | Container Postgres pronto |
-| `org.testcontainers:junit-jupiter` | 1.20.x | `@Testcontainers` + `@Container` para JUnit 5 |
-| `postgres:16-alpine` | — | Mesma imagem do `docker-compose.yml` |
+Inicialmente planejamos **Testcontainers** (subir Postgres descartável via Docker). Tentamos com 1.21.3 mas batemos numa incompatibilidade de API: o Docker Desktop 4.66 expõe API 1.54 (mín. 1.40), enquanto o docker-java embarcado no Testcontainers usa API 1.32 por padrão. Diversos workarounds (variáveis `DOCKER_HOST`, `DOCKER_API_VERSION`, sockets alternativos) não resolveram.
 
-### Dependências a adicionar no `pom.xml`
+**Decisão**: usar o **Postgres local do `docker-compose.yml`** (`postgres:16-alpine` na porta 5432), apontando os testes para uma database separada `bancodigital_test`. Vantagens:
 
-```xml
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>junit-jupiter</artifactId>
-    <version>1.20.4</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.testcontainers</groupId>
-    <artifactId>postgresql</artifactId>
-    <version>1.20.4</version>
-    <scope>test</scope>
-</dependency>
+- Mesma imagem da prod, sem fricção de versão de API Docker.
+- Zero dependências extras no `pom.xml`.
+- Mais rápido (container já está aquecido).
+- Dev e teste convivem no mesmo Postgres mas em databases isoladas.
+
+**Trade-off**: o colega/CI precisa subir o `docker-compose.yml` + criar a database de teste. Não é zero-setup como seria com Testcontainers funcional.
+
+### Setup (uma vez)
+
+```bash
+docker compose up -d postgres
+docker exec bancodigital-postgres psql -U bancodigital -d postgres -c "CREATE DATABASE bancodigital_test"
 ```
 
-Sem precisar de `spring-boot-testcontainers` (que puxa BOM). Conexão via `@DynamicPropertySource`.
+### Configuração
 
-### Classe-base proposta
+[`src/test/resources/application-integration-test.yml`](../src/test/resources/application-integration-test.yml):
 
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bancodigital_test
+    username: bancodigital
+    password: bancodigital
+  flyway:
+    enabled: true
 ```
-src/test/java/com/bancodigital/integration/PostgresIntegrationTest.java
+
+[`AbstractIntegrationTest`](../src/test/java/com/bancodigital/integration/AbstractIntegrationTest.java):
+
+```java
+@SpringBootTest(webEnvironment = WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+@ActiveProfiles("integration-test")
+public abstract class AbstractIntegrationTest {
+    @Autowired protected MockMvc mockMvc;
+    @Autowired protected JdbcTemplate jdbc;
+
+    @BeforeEach
+    void cleanDatabase() {
+        jdbc.execute("TRUNCATE TABLE transactions, investments, accounts, users RESTART IDENTITY CASCADE");
+        jdbc.execute("ALTER SEQUENCE account_number_seq RESTART WITH 1");
+    }
+}
 ```
 
-- `@SpringBootTest` (ou `@JdbcTest` para suítes que só tocam repositório).
-- `@Testcontainers` + `@Container static PostgreSQLContainer<?> pg = new PostgreSQLContainer<>("postgres:16-alpine")`.
-- `@DynamicPropertySource` injeta `spring.datasource.url`, user, password.
-- Flyway aplica `V1__init_schema.sql` + `V2__seed_data.sql` automaticamente no boot.
-- `@Sql(scripts = "/cleanup.sql")` ou `@Transactional` rollback por método (preferir rollback).
+Flyway aplica as migrations no primeiro boot. TRUNCATE em `@BeforeEach` garante isolamento entre testes. Helpers `insertUser`, `insertAccount`, `insertInvestment` montam o estado inicial.
 
 ---
 
@@ -166,67 +188,73 @@ Para controlar o tempo, injetar `Clock` mutável via `@TestConfiguration`:
 
 ---
 
-## 5. Plano web (E2E com `MockMvc` ou `TestRestTemplate`)
+## 5. Plano web (E2E com `MockMvc`)
 
-Sobe a aplicação inteira (controllers + security + templates). Útil para garantir CSRF, autenticação, fluxo de redirect.
+Sobe a aplicação inteira (controllers + security + templates) e exercita os endpoints reais com `MockMvc`. Garante CSRF, autenticação, redirect.
 
-### 5.1 Auth + Signup
+### 5.1 ✅ Signup endpoint — implementado
+
+[`SignupIntegrationTest`](../src/test/java/com/bancodigital/integration/SignupIntegrationTest.java) (3 casos):
+
+| Caso | Verificação |
+|---|---|
+| `signupEndpointCreatesUserAndAccount` | POST válido → 302 `/login?signup`, 1 user + 1 conta no DB, hash ≠ senha raw |
+| `signupEndpointRejectsDuplicateEmail` | E-mail existente → 200 com erro, DB inalterado |
+| `signupEndpointRejectsShortPassword` | Senha < 8 chars → 200 com erro, DB sem novo user |
+
+### 5.2 ✅ Investment endpoint — implementado
+
+[`InvestmentIntegrationTest`](../src/test/java/com/bancodigital/integration/InvestmentIntegrationTest.java) (3 casos, autenticados via `@WithMockUser`):
+
+| Caso | Verificação |
+|---|---|
+| `investmentEndpointExecutesInvestAndPersistsTransaction` | POST `/investment` (investir 100) → saldo cai 400, investido sobe 100, 1 tx `investment` |
+| `investmentEndpointRejectsInsufficientBalance` | Saldo baixo → 302 com flash error, DB inalterado |
+| `investmentEndpointRequiresAuthentication` | GET sem auth → 302 para login |
+
+### 5.3 🚧 Auth + outros endpoints — pendente
 
 | # | Cenário | Verificação |
 |---|---|---|
-| 1 | GET `/signup` anônimo | 200, formulário com token CSRF |
-| 2 | POST `/signup` válido | 302 → `/login?signup`, novo usuário no banco |
-| 3 | POST `/signup` com e-mail duplicado | 200 com mensagem de erro, **sem novo usuário** |
-| 4 | POST `/login` com credencial dos seeds | 302 → `/dashboard`, sessão criada |
-| 5 | POST `/login` com senha errada | 302 → `/login?error` |
-| 6 | GET `/dashboard` anônimo | 302 → `/login` |
-
-### 5.2 Operações autenticadas (via `@WithUserDetails("joao@email.com")`)
-
-| # | Cenário | Verificação |
-|---|---|---|
-| 1 | POST `/deposit` valor válido | 302 → `/deposit`, flash de sucesso, saldo atualizado |
-| 2 | POST `/withdraw` valor inválido | Flash de erro, saldo intacto |
-| 3 | POST `/transfer` conta inexistente | Flash de erro |
-| 4 | POST `/investment` operação inválida | Flash de erro |
-| 5 | GET `/statement` | 200, lista transações ordenada DESC |
-| 6 | POST sem CSRF token | 403 |
+| 1 | POST `/login` com credencial dos seeds | 302 → `/dashboard`, sessão criada |
+| 2 | POST `/login` com senha errada | 302 → `/login?error` |
+| 3 | GET `/dashboard` anônimo | 302 → `/login` |
+| 4 | POST `/deposit` valor válido | Flash de sucesso, saldo atualizado |
+| 5 | POST `/withdraw` valor inválido | Flash de erro, saldo intacto |
+| 6 | POST `/transfer` conta inexistente | Flash de erro |
+| 7 | GET `/statement` | 200, lista transações ordenada DESC |
+| 8 | POST sem CSRF token | 403 |
 
 ---
 
-## 6. Estrutura de pastas proposta
+## 6. Estrutura atual
 
 ```
-src/test/java/com/bancodigital/
-├── integration/
-│   ├── PostgresIntegrationTest.java           ← classe-base com @Testcontainers
-│   ├── repository/
-│   │   ├── JdbcUserRepositoryIT.java          ← ~6 casos
-│   │   ├── JdbcAccountRepositoryIT.java       ← ~8 casos
-│   │   ├── JdbcTransactionRepositoryIT.java   ← ~7 casos
-│   │   └── JdbcInvestmentRepositoryIT.java    ← ~6 casos
-│   ├── service/
-│   │   ├── SignupServiceIT.java               ← ~4 casos
-│   │   ├── AccountServiceTransferIT.java      ← ~5 casos
-│   │   ├── AccountServiceDepositWithdrawIT.java ← ~4 casos
-│   │   └── InvestmentServiceIT.java           ← ~5 casos
-│   └── web/
-│       ├── SignupLoginIT.java                 ← ~6 casos
-│       └── OperationsIT.java                  ← ~6 casos
+src/test/java/com/bancodigital/integration/
+├── AbstractIntegrationTest.java         ✅ base (@SpringBootTest + MockMvc + JdbcTemplate)
+├── SignupIntegrationTest.java           ✅ 3 casos
+└── InvestmentIntegrationTest.java       ✅ 3 casos
 ```
 
-**Meta: ~57 testes de integração** verdes em CI.
+Estrutura futura para os outros domínios:
+
+```
+src/test/java/com/bancodigital/integration/
+├── repository/   🚧 Jdbc{User,Account,Transaction,Investment}RepositoryTest
+├── service/      🚧 {AccountTransfer,AccountDepositWithdraw}ServiceTest
+└── web/          🚧 LoginAuthTest, StatementTest, dashboardTest
+```
 
 ---
 
 ## 7. Convenções
 
-- Sufixo `IT` (Integration Test), não `Test` — separar do unitário no surefire/failsafe.
-- Configurar `maven-failsafe-plugin` para rodar `**/*IT.java` numa fase separada (`mvn verify`).
-- **Reuso de container**: `@Container static` + `withReuse(true)` + `~/.testcontainers.properties` com `testcontainers.reuse.enable=true` — derruba o tempo de suíte de ~120 s para ~15 s no segundo run.
-- Limpeza entre testes: preferir `@Transactional` (rollback automático em `@SpringBootTest`) a `TRUNCATE`. Para repositórios com sequence (`account_number_seq`), usar `@Sql` com `ALTER SEQUENCE ... RESTART` antes da classe.
-- Não checar dados dos seeds em assertions críticas — usar setup explícito por teste (seeds podem mudar).
-- Concorrência: usar `CompletableFuture.runAsync` com `Executors.newFixedThreadPool(2)` + `CountDownLatch` para sincronizar início das threads.
+- Sufixo `IntegrationTest` (não `IT`) — Surefire pega no `mvn test` padrão (sem necessidade de Failsafe).
+- Limpeza entre testes: `TRUNCATE ... RESTART IDENTITY CASCADE` no `@BeforeEach` da classe-base. Sequence `account_number_seq` reiniciada explicitamente.
+- Cada teste seeds seu próprio estado via `insertUser`, `insertAccount`, `insertInvestment` — sem depender de seed data do Flyway (V2).
+- CSRF: usar `.with(csrf())` em POSTs (Spring Security está ativo).
+- Autenticação: `@WithMockUser(username = "<email>")` resolve o `CurrentUser` se o user existir no DB; senão usar `@WithUserDetails`.
+- `BigDecimal`: comparar com `.compareTo(...) == 0`, não `.equals` (scale-sensitive).
 
 ---
 
@@ -234,17 +262,17 @@ src/test/java/com/bancodigital/
 
 Quando rodar em CI (GitHub Actions, próxima entrega):
 
-- Job separado para `mvn test` (unitário, rápido, sem Docker).
-- Job para `mvn verify -DskipUnitTests` (integração, com `docker` disponível no runner — `ubuntu-latest` já vem).
+- Job único `mvn test` que sobe o Postgres via `services:` do GitHub Actions, cria a `bancodigital_test`, e roda toda a suite (unit + integração).
 - Cache do `~/.m2/repository` para acelerar.
 
 ---
 
 ## 9. Critério de pronto
 
-- [ ] `pom.xml` com Testcontainers + failsafe-plugin configurado.
-- [ ] `PostgresIntegrationTest` base funcionando, sobe container em < 10 s no primeiro run.
-- [ ] 4 suítes de repositório verdes (~27 testes).
+- [x] Infraestrutura `AbstractIntegrationTest` funcionando contra Postgres local.
+- [x] `SignupIntegrationTest` cobrindo happy path + 2 cenários de erro.
+- [x] `InvestmentIntegrationTest` cobrindo invest + saldo insuficiente + requer auth.
+- [ ] Repositórios cobertos (User/Account/Transaction/Investment) via `@JdbcTest`.
 - [ ] 4 suítes de serviço verdes (~18 testes).
 - [ ] 2 suítes web verdes (~12 testes).
 - [ ] `mvn verify` roda tudo localmente.
