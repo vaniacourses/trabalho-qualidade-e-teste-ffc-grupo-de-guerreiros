@@ -162,12 +162,17 @@ cd trabalho-qualidade-e-teste-ffc-grupo-de-guerreiros
 
 Antes de executar o Docker Compose, verifique se o Docker Desktop está aberto no Windows e com integração WSL habilitada.
 
+Execute:
+
+```bash
+docker compose up -d --build
+```
+
 Caso apareça erro de permissão ao executar o Docker:
 
 ```bash
 permission denied while trying to connect to the docker API
 ```
-
 Execute:
 
 ```bash
@@ -175,7 +180,7 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-Depois execute:
+Depois execute novamente:
 
 ```bash
 docker compose up -d --build
