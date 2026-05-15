@@ -127,14 +127,55 @@ docker --version
 
 ## 📦 2. Clonar o repositório
 
+Primeiro, saia da pasta protegida no WSL:
+
+```bash
+cd ~
+```
+
+Depois clone o repositório:
+
 ```bash
 git clone <url-do-repo>
 cd trabalho-qualidade-e-teste-ffc-grupo-de-guerreiros
 ```
 
+> ⚠ Caso o GitHub solicite login e senha:
+>
+> O GitHub não aceita mais senha da conta para operações Git.
+>
+> Será necessário utilizar um **Personal Access Token (PAT)**.
+>
+> Caminho para gerar:
+>
+> `GitHub → Settings → Developer settings → Personal access tokens → Tokens classic → Generate new token`
+>
+> Permissão necessária:
+>
+> `repo` ou adicione todas
+>
+> Ao solicitar a senha durante o clone, utilize o token gerado.(Lembre-se de anotar o token gerado)
+
 ---
 
 ## ⬆ 3. Subir a aplicação
+
+Antes de executar o Docker Compose, verifique se o Docker Desktop está aberto no Windows e com integração WSL habilitada.
+
+Caso apareça erro de permissão ao executar o Docker:
+
+```bash
+permission denied while trying to connect to the docker API
+```
+
+Execute:
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+Depois execute:
 
 ```bash
 docker compose up -d --build
