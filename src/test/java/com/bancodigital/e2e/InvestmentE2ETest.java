@@ -1,7 +1,5 @@
 package com.bancodigital.e2e;
 
-import java.math.BigDecimal;
-
 import com.bancodigital.e2e.pages.InvestmentPage;
 import com.bancodigital.e2e.pages.LoginPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,19 +13,17 @@ class InvestmentE2ETest extends AbstractE2ETest {
 
     @BeforeEach
     void seed() {
-        long userId = insertUser("Joao Silva", EMAIL, BCRYPT_TEST_PASSWORD);
-        insertAccount("C00001", new BigDecimal("500.00"), userId);
-        insertInvestment(userId, new BigDecimal("0.00"));
+        seedDefaultUser();
     }
 
     @Test
-    void acessoSemAutenticacaoRedireciona() {
+    void unauthenticatedAccessRedirectsToLogin() {
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         assertThat(page.getCurrentUrl()).contains("/login");
     }
 
     @Test
-    void investirComSaldoSuficiente() {
+    void investWithSufficientBalanceSucceeds() {
         new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "100.00");
@@ -35,7 +31,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void investirMaisQueSaldo() {
+    void investMoreThanBalanceFails() {
         new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "600.00");
@@ -43,7 +39,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void resgatarComSucesso() {
+    void withdrawSucceeds() {
         new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "100.00");
@@ -52,7 +48,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void resgatarMaisQueInvestido() {
+    void withdrawMoreThanInvestedFails() {
         new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "100.00");

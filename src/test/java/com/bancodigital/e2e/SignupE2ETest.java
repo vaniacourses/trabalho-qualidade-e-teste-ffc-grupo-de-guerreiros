@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SignupE2ETest extends AbstractE2ETest {
 
     @Test
-    void cadastroComDadosValidos() {
+    void signupWithValidDataSucceeds() {
         SignupPage page = new SignupPage(driver, baseUrl);
         page.fillAndSubmit("Maria Souza", "maria@email.com", TEST_PASSWORD);
         assertThat(page.getCurrentUrl()).contains("/login?signup");
@@ -16,7 +16,7 @@ class SignupE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void cadastroComEmailDuplicado() {
+    void signupWithDuplicateEmailFails() {
         long userId = insertUser("Joao Silva", "joao@email.com", BCRYPT_TEST_PASSWORD);
         insertAccount("C00001", new java.math.BigDecimal("0.00"), userId);
 
@@ -26,16 +26,23 @@ class SignupE2ETest extends AbstractE2ETest {
     }
 
     @Test
-    void cadastroComSenhaCurta() {
+    void signupWithShortPasswordFails() {
         SignupPage page = new SignupPage(driver, baseUrl);
         page.fillAndSubmit("Maria Souza", "maria@email.com", "1234");
         assertThat(page.getErrorMessage()).isEqualTo("Senha deve ter ao menos 8 caracteres.");
     }
 
     @Test
-    void cadastroComNomeEmBranco() {
+    void signupWithBlankNameFails() {
         SignupPage page = new SignupPage(driver, baseUrl);
         page.fillAndSubmit("  ", "maria@email.com", TEST_PASSWORD);
         assertThat(page.getErrorMessage()).isEqualTo("Nome inválido.");
+    }
+
+    @Test
+    void signupWithInvalidEmailFails() {
+        SignupPage page = new SignupPage(driver, baseUrl);
+        page.fillAndSubmit("Maria Souza", "email-sem-arroba", TEST_PASSWORD);
+        assertThat(page.getErrorMessage()).isEqualTo("E-mail inválido.");
     }
 }

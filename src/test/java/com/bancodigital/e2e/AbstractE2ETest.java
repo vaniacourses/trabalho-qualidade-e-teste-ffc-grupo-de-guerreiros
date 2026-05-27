@@ -72,4 +72,10 @@ public abstract class AbstractE2ETest {
     protected void insertInvestment(long userId, BigDecimal amount) {
         jdbc.update("INSERT INTO investments (user_id, amount) VALUES (?, ?)", userId, amount);
     }
+
+    protected long seedDefaultUser() {
+        long userId = insertUser("Joao Silva", "joao@email.com", BCRYPT_TEST_PASSWORD);
+        insertAccount("C00001", new BigDecimal("500.00"), userId);
+        return userId;
+    }
 }
