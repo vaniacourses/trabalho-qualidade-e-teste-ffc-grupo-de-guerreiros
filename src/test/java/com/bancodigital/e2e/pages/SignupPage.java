@@ -3,6 +3,7 @@ package com.bancodigital.e2e.pages;
 import java.time.Duration;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -24,11 +25,15 @@ public class SignupPage {
         driver.findElement(By.id("nome")).sendKeys(name);
         driver.findElement(By.id("email")).sendKeys(email);
         driver.findElement(By.id("password")).sendKeys(password);
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].setAttribute('novalidate', '')",
+                driver.findElement(By.cssSelector("form"))
+        );
         WebElement submitButton = driver.findElement(By.cssSelector("button[type='submit']"));
         submitButton.click();
         wait.until(ExpectedConditions.stalenessOf(submitButton));
         wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlContains("/login"),
+                ExpectedConditions.urlContains("/login?signup"),
                 ExpectedConditions.visibilityOfElementLocated(By.cssSelector("p.alert.error"))
         ));
         return this;
