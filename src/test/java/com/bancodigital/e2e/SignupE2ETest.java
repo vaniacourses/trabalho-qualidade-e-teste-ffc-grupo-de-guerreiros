@@ -10,18 +10,18 @@ class SignupE2ETest extends AbstractE2ETest {
     @Test
     void cadastroComDadosValidos() {
         SignupPage page = new SignupPage(driver, baseUrl);
-        page.fillAndSubmit("Maria Souza", "maria@email.com", "senha1234");
+        page.fillAndSubmit("Maria Souza", "maria@email.com", TEST_PASSWORD);
         assertThat(page.getCurrentUrl()).contains("/login?signup");
         assertThat(page.getSuccessMessage()).isEqualTo("Cadastro realizado. Faça login para continuar.");
     }
 
     @Test
     void cadastroComEmailDuplicado() {
-        long userId = insertUser("Joao Silva", "joao@email.com", BCRYPT_SENHA123);
+        long userId = insertUser("Joao Silva", "joao@email.com", BCRYPT_TEST_PASSWORD);
         insertAccount("C00001", new java.math.BigDecimal("0.00"), userId);
 
         SignupPage page = new SignupPage(driver, baseUrl);
-        page.fillAndSubmit("Joao Novo", "joao@email.com", "senha1234");
+        page.fillAndSubmit("Joao Novo", "joao@email.com", TEST_PASSWORD);
         assertThat(page.getErrorMessage()).isEqualTo("E-mail já cadastrado.");
     }
 
@@ -35,7 +35,7 @@ class SignupE2ETest extends AbstractE2ETest {
     @Test
     void cadastroComNomeEmBranco() {
         SignupPage page = new SignupPage(driver, baseUrl);
-        page.fillAndSubmit("  ", "maria@email.com", "senha1234");
+        page.fillAndSubmit("  ", "maria@email.com", TEST_PASSWORD);
         assertThat(page.getErrorMessage()).isEqualTo("Nome inválido.");
     }
 }

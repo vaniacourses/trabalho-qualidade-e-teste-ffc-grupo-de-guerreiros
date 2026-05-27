@@ -18,7 +18,7 @@ class PerformanceE2ETest extends AbstractE2ETest {
 
     @BeforeEach
     void seed() {
-        long userId = insertUser("Joao Silva", EMAIL, BCRYPT_SENHA123);
+        long userId = insertUser("Joao Silva", EMAIL, BCRYPT_TEST_PASSWORD);
         insertAccount("C00001", new BigDecimal("500.00"), userId);
         insertInvestment(userId, new BigDecimal("0.00"));
     }
@@ -33,7 +33,7 @@ class PerformanceE2ETest extends AbstractE2ETest {
 
     @Test
     void paginaInvestimentoCarregaDentroDoSLA() {
-        new LoginPage(driver, baseUrl).loginAs(EMAIL, "senha123");
+        new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         long start = System.currentTimeMillis();
         new InvestmentPage(driver, baseUrl);
         long elapsed = System.currentTimeMillis() - start;
@@ -44,7 +44,7 @@ class PerformanceE2ETest extends AbstractE2ETest {
     void submissaoCadastroRespondeNoSLA() {
         SignupPage page = new SignupPage(driver, baseUrl);
         long start = System.currentTimeMillis();
-        page.fillAndSubmit("Maria Souza", "maria@email.com", "senha1234");
+        page.fillAndSubmit("Maria Souza", "maria@email.com", TEST_PASSWORD);
         long elapsed = System.currentTimeMillis() - start;
         assertThat(page.getCurrentUrl()).contains("/login?signup");
         assertThat(elapsed).isLessThan(FORM_SUBMIT_SLA_MS);
@@ -52,7 +52,7 @@ class PerformanceE2ETest extends AbstractE2ETest {
 
     @Test
     void submissaoInvestimentoRespondeNoSLA() {
-        new LoginPage(driver, baseUrl).loginAs(EMAIL, "senha123");
+        new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         long start = System.currentTimeMillis();
         page.submitOperation("investir", "100.00");

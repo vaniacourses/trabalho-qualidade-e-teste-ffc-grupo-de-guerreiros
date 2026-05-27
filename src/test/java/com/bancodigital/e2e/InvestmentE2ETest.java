@@ -15,7 +15,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
 
     @BeforeEach
     void seed() {
-        long userId = insertUser("Joao Silva", EMAIL, BCRYPT_SENHA123);
+        long userId = insertUser("Joao Silva", EMAIL, BCRYPT_TEST_PASSWORD);
         insertAccount("C00001", new BigDecimal("500.00"), userId);
         insertInvestment(userId, new BigDecimal("0.00"));
     }
@@ -28,7 +28,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
 
     @Test
     void investirComSaldoSuficiente() {
-        new LoginPage(driver, baseUrl).loginAs(EMAIL, "senha123");
+        new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "100.00");
         assertThat(page.getSuccessMessage()).isEqualTo("Investimento realizado com sucesso!");
@@ -36,7 +36,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
 
     @Test
     void investirMaisQueSaldo() {
-        new LoginPage(driver, baseUrl).loginAs(EMAIL, "senha123");
+        new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "600.00");
         assertThat(page.getErrorMessage()).isEqualTo("Saldo insuficiente na conta.");
@@ -44,7 +44,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
 
     @Test
     void resgatarComSucesso() {
-        new LoginPage(driver, baseUrl).loginAs(EMAIL, "senha123");
+        new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "100.00");
         page.submitOperation("retirar", "50.00");
@@ -53,7 +53,7 @@ class InvestmentE2ETest extends AbstractE2ETest {
 
     @Test
     void resgatarMaisQueInvestido() {
-        new LoginPage(driver, baseUrl).loginAs(EMAIL, "senha123");
+        new LoginPage(driver, baseUrl).loginAs(EMAIL, TEST_PASSWORD);
         InvestmentPage page = new InvestmentPage(driver, baseUrl);
         page.submitOperation("investir", "100.00");
         page.submitOperation("retirar", "200.00");

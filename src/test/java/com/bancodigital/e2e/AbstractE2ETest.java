@@ -1,6 +1,7 @@
 package com.bancodigital.e2e;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +19,8 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("integration-test")
 public abstract class AbstractE2ETest {
 
-    protected static final String BCRYPT_SENHA123 = "$2a$10$fy1UbQcOh5tYVPpfzhX5ceRqLpA1OGa7hsalIwmD2oiNXrnlbSu66";
+    protected static final String BCRYPT_TEST_PASSWORD = "$2a$10$tawrHKPHutNwZPe/Sm1AEOiUqB5mfOznW5PWvzcM1zozEyfowdlOu";
+    protected static final String TEST_PASSWORD = "XhqUH*&c0qggXp9S#xef";
 
     @LocalServerPort
     private int port;
@@ -33,11 +35,21 @@ public abstract class AbstractE2ETest {
     void setupDriver() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--window-size=1280,800");
+        boolean headless = !"false".equalsIgnoreCase(System.getProperty("headless", "true"));
+        if (headless) {
+            options.addArguments("--headless=new");
+        }
+        options.addArguments("--no-sandbox", "--disable-dev-shm-usage", "--window-size=1280,800",
+                "--disable-features=PasswordLeakDetection", "--no-first-run");
+        HashMap<String, Object> prefs = new HashMap<>();
+        prefs.put("credentials_enable_service", false);
+        prefs.put("profile.password_manager_enabled", false);
+        prefs.put("profile.password_manager_leak_detection", false);
+        options.setExperimentalOption("prefs", prefs);
         driver = new ChromeDriver(options);
         baseUrl = "http://localhost:" + port;
         jdbc.execute("TRUNCATE TABLE transactions, investments, accounts, users RESTART IDENTITY CASCADE");
-        jdbc.execute("ALTER SEQUENCE account_number_seq RESTART WITH 1");
+        jdbc.execute("ALTER SEQUENCE account_number_seq RESTART WITH 100");
     }
 
     @AfterEach
