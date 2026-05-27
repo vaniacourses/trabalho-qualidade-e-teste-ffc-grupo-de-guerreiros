@@ -35,7 +35,7 @@ public abstract class AbstractE2ETest {
     void setupDriver() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        boolean headless = !"false".equalsIgnoreCase(System.getProperty("headless", "true"));
+        boolean headless = "true".equalsIgnoreCase(System.getProperty("headless", "false"));
         if (headless) {
             options.addArguments("--headless=new");
         }
