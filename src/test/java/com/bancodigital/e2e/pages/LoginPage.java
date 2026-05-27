@@ -1,41 +1,35 @@
 package com.bancodigital.e2e.pages;
 
-import java.time.Duration;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class LoginPage {
-
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+public class LoginPage extends BasePage {
 
     public LoginPage(WebDriver driver, String baseUrl) {
-        this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        super(driver);
         driver.get(baseUrl + "/login");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
     }
 
+    // Happy path — used as setup in other tests; assumes valid credentials.
     public LoginPage loginAs(String email, String password) {
         driver.findElement(By.id("email")).sendKeys(email);
         driver.findElement(By.id("password")).sendKeys(password);
         driver.findElement(By.cssSelector("button[type='submit']")).click();
-        wait.until(ExpectedConditions.not(ExpectedConditions.urlContains("/login")));
+        wait.until(ExpectedConditions.urlContains("/dashboard"));
         return this;
     }
 
-    public String getErrorMessage() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("p.alert.error"))).getText();
-    }
-
-    public String getSuccessMessage() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("p.alert.success"))).getText();
-    }
-
-    public String getCurrentUrl() {
-        return driver.getCurrentUrl();
+    // For failure scenarios — waits for /dashboard OR error message without assuming outcome.
+    public LoginPage tryLogin(String email, String password) {
+        driver.findElement(By.id("email")).sendKeys(email);
+        driver.findElement(By.id("password")).sendKeys(password);
+        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("/dashboard"),
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("p.alert.error"))
+        ));
+        return this;
     }
 }
