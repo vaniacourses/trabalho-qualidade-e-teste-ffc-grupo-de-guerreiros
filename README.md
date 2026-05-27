@@ -53,12 +53,13 @@ Stack completa, camadas, schema do banco e decisões de design em [docs/ARCHITEC
 
 ## 🧪 Testes
 
-O projeto tem duas suítes complementares:
+O projeto tem três suítes complementares:
 
 | Tipo | O que faz | Velocidade | Banco |
 |---|---|---|---|
 | **Unitários (Mockito)** | Testa cada `Service` isolando deps com `@Mock`/`@InjectMocks`. Não sobe Spring. | ~ms | nenhum |
 | **Integração** | `@SpringBootTest` + `MockMvc` exercitando endpoints reais (HTTP → Service → Repo → Postgres). | ~segundos | Postgres real |
+| **E2E (Selenium)** | Chrome controlado por Selenium navegando na UI real (signup, login, investimento, performance). | ~segundos | Postgres real |
 
 ### Pré-requisitos
 
@@ -74,18 +75,19 @@ O projeto tem duas suítes complementares:
 ### Como rodar
 
 ```bash
-# Tudo
+# Unitários + integração (sem E2E)
 mvn test
 
-# Só unitários
-mvn -Dtest='*ServiceTest,*Test' -DexcludedGroups=integration test
+# Tudo, incluindo E2E (precisa do Postgres e do Chrome)
+mvn verify
 
-# Só integração (precisa do Postgres up)
-mvn -Dtest='*IntegrationTest' test
+# Só E2E — com Chrome visível e slowdown de 1,5s entre ações
+mvn failsafe:integration-test -Dheadless=false -Dslowdown=1500
 
 # Uma classe ou método específico
 mvn -Dtest='InvestmentServiceTest' test
 mvn -Dtest='SignupIntegrationTest#signupEndpointCreatesUserAndAccount' test
+mvn failsafe:integration-test -Dit.test='SignupE2ETest' -Dheadless=false
 ```
 
 ### Cobertura atual
@@ -100,7 +102,10 @@ mvn -Dtest='SignupIntegrationTest#signupEndpointCreatesUserAndAccount' test
 | [`InvestmentServiceTest`](src/test/java/com/bancodigital/investment/InvestmentServiceTest.java) | 25 | unitário (Mockito para `query`/`execute`) |
 | [`SignupIntegrationTest`](src/test/java/com/bancodigital/integration/SignupIntegrationTest.java) | 3 | integração (MockMvc + Postgres) |
 | [`InvestmentIntegrationTest`](src/test/java/com/bancodigital/integration/InvestmentIntegrationTest.java) | 3 | integração (MockMvc + Postgres) |
-| **Total** | **112** | |
+| [`SignupE2ETest`](src/test/java/com/bancodigital/e2e/SignupE2ETest.java) | 4 | E2E Selenium (happy path + 3 erros) |
+| [`InvestmentE2ETest`](src/test/java/com/bancodigital/e2e/InvestmentE2ETest.java) | 5 | E2E Selenium (auth + invest + resgatar + 2 erros) |
+| [`PerformanceE2ETest`](src/test/java/com/bancodigital/e2e/PerformanceE2ETest.java) | 4 | E2E Selenium (SLA: 2s página, 3s submit) |
+| **Total** | **125** | |
 
 Estratégia detalhada, padrões e cenários planejados para os outros domínios em [docs/TESTES_UNITARIOS.md](docs/TESTES_UNITARIOS.md) e [docs/TESTES_INTEGRACAO.md](docs/TESTES_INTEGRACAO.md).
 

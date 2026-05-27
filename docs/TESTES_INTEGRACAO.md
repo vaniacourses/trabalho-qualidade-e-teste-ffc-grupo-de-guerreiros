@@ -6,7 +6,11 @@
 
 - ✅ **Investment endpoint**: 3 casos via `MockMvc` + Postgres real — [`InvestmentIntegrationTest`](../src/test/java/com/bancodigital/integration/InvestmentIntegrationTest.java)
 - ✅ **Signup endpoint**: 3 casos via `MockMvc` + Postgres real — [`SignupIntegrationTest`](../src/test/java/com/bancodigital/integration/SignupIntegrationTest.java)
-- ✅ **Infraestrutura**: [`AbstractIntegrationTest`](../src/test/java/com/bancodigital/integration/AbstractIntegrationTest.java) com `@SpringBootTest` + `MockMvc` + `JdbcTemplate` + TRUNCATE em `@BeforeEach`
+- ✅ **Infraestrutura MockMvc**: [`AbstractIntegrationTest`](../src/test/java/com/bancodigital/integration/AbstractIntegrationTest.java) com `@SpringBootTest` + `MockMvc` + `JdbcTemplate` + TRUNCATE em `@BeforeEach`
+- ✅ **E2E Selenium — Signup**: 4 casos (happy path + email duplicado + senha curta + nome em branco) — [`SignupE2ETest`](../src/test/java/com/bancodigital/e2e/SignupE2ETest.java)
+- ✅ **E2E Selenium — Investment**: 5 casos (auth + investir + resgatar + 2 erros) — [`InvestmentE2ETest`](../src/test/java/com/bancodigital/e2e/InvestmentE2ETest.java)
+- ✅ **E2E Selenium — Performance**: 4 casos com SLA (2s página, 3s submit) — [`PerformanceE2ETest`](../src/test/java/com/bancodigital/e2e/PerformanceE2ETest.java)
+- ✅ **Infraestrutura E2E**: [`AbstractE2ETest`](../src/test/java/com/bancodigital/e2e/AbstractE2ETest.java) com `@SpringBootTest(RANDOM_PORT)` + Selenium ChromeDriver + TRUNCATE em `@BeforeEach`
 - 🚧 **Account endpoints** (`deposit`/`withdraw`/`transfer`), **Statement**: pendentes
 - 🚧 **Auth flow** (login, logout, CSRF, sessão): pendente
 
@@ -227,13 +231,72 @@ Sobe a aplicação inteira (controllers + security + templates) e exercita os en
 
 ---
 
-## 6. Estrutura atual
+## 6. E2E com Selenium (navegador real)
+
+Enquanto a seção 5 usa `MockMvc` (HTTP sintético sem render de template), os testes E2E sobem o Spring em porta aleatória e controlam um **Chrome headless real** via Selenium WebDriver. Cada teste vê a UI como o usuário veria.
+
+### 6.1 Infraestrutura
+
+[`AbstractE2ETest`](../src/test/java/com/bancodigital/e2e/AbstractE2ETest.java):
+
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("integration-test")
+public abstract class AbstractE2ETest {
+    @BeforeEach void setupDriver() {
+        // WebDriverManager baixa o chromedriver automaticamente
+        // --headless=new por padrão; -Dheadless=false para ver o browser
+        // TRUNCATE + RESTART IDENTITY no Postgres antes de cada teste
+    }
+    @AfterEach void teardownDriver() { driver.quit(); }
+}
+```
+
+**Page Objects** (`e2e/pages/`): encapsulam localizadores e waiters, evitam que os testes manipulem o DOM diretamente.
+
+### 6.2 Suítes implementadas
+
+| Suíte | Casos | Cenários |
+|---|---|---|
+| [`SignupE2ETest`](../src/test/java/com/bancodigital/e2e/SignupE2ETest.java) | 4 | Cadastro válido, email duplicado, senha curta, nome em branco |
+| [`InvestmentE2ETest`](../src/test/java/com/bancodigital/e2e/InvestmentE2ETest.java) | 5 | Acesso sem auth, investir com saldo, investir sem saldo, resgatar, resgatar acima do investido |
+| [`PerformanceE2ETest`](../src/test/java/com/bancodigital/e2e/PerformanceE2ETest.java) | 4 | Carga da página signup ≤ 2s, carga da página investment ≤ 2s, submit signup ≤ 3s, submit investment ≤ 3s |
+
+### 6.3 Como rodar
+
+```bash
+# Headless (padrão — usado em CI via mvn verify)
+mvn verify
+
+# Com Chrome visível para depuração
+mvn failsafe:integration-test -Dheadless=false
+
+# Com Chrome visível + pausa entre ações (1500ms)
+mvn failsafe:integration-test -Dheadless=false -Dslowdown=1500
+
+# Uma suíte específica
+mvn failsafe:integration-test -Dheadless=false -Dit.test='InvestmentE2ETest'
+```
+
+---
+
+## 7. Estrutura atual
 
 ```
-src/test/java/com/bancodigital/integration/
-├── AbstractIntegrationTest.java         ✅ base (@SpringBootTest + MockMvc + JdbcTemplate)
-├── SignupIntegrationTest.java           ✅ 3 casos
-└── InvestmentIntegrationTest.java       ✅ 3 casos
+src/test/java/com/bancodigital/
+├── integration/
+│   ├── AbstractIntegrationTest.java     ✅ base (MockMvc + JdbcTemplate)
+│   ├── SignupIntegrationTest.java       ✅ 3 casos
+│   └── InvestmentIntegrationTest.java   ✅ 3 casos
+└── e2e/
+    ├── AbstractE2ETest.java             ✅ base (Selenium + JdbcTemplate)
+    ├── SignupE2ETest.java               ✅ 4 casos
+    ├── InvestmentE2ETest.java           ✅ 5 casos
+    ├── PerformanceE2ETest.java          ✅ 4 casos
+    └── pages/
+        ├── SignupPage.java
+        ├── LoginPage.java
+        └── InvestmentPage.java
 ```
 
 Estrutura futura para os outros domínios:
@@ -247,33 +310,38 @@ src/test/java/com/bancodigital/integration/
 
 ---
 
-## 7. Convenções
+## 8. Convenções
 
-- Sufixo `IntegrationTest` (não `IT`) — Surefire pega no `mvn test` padrão (sem necessidade de Failsafe).
-- Limpeza entre testes: `TRUNCATE ... RESTART IDENTITY CASCADE` no `@BeforeEach` da classe-base. Sequence `account_number_seq` reiniciada explicitamente.
-- Cada teste seeds seu próprio estado via `insertUser`, `insertAccount`, `insertInvestment` — sem depender de seed data do Flyway (V2).
-- CSRF: usar `.with(csrf())` em POSTs (Spring Security está ativo).
-- Autenticação: `@WithMockUser(username = "<email>")` resolve o `CurrentUser` se o user existir no DB; senão usar `@WithUserDetails`.
+- **MockMvc** (`integration/`): sufixo `IntegrationTest` — Surefire pega no `mvn test`.
+- **Selenium** (`e2e/`): sufixo `E2ETest` — excluídos do Surefire, rodados pelo Failsafe em `mvn verify`.
+- Limpeza entre testes: `TRUNCATE ... RESTART IDENTITY CASCADE` no `@BeforeEach` das classes-base. Sequence `account_number_seq` reiniciada explicitamente (valor 100 nos E2E para evitar colisão com accounts inseridos via helper).
+- Cada teste seed seu próprio estado via `insertUser`, `insertAccount`, `insertInvestment` — sem depender de seed data do Flyway (V2).
+- CSRF: usar `.with(csrf())` em POSTs MockMvc (Spring Security está ativo).
+- Autenticação MockMvc: `@WithMockUser(username = "<email>")` resolve o `CurrentUser` se o user existir no DB; senão usar `@WithUserDetails`.
 - `BigDecimal`: comparar com `.compareTo(...) == 0`, não `.equals` (scale-sensitive).
 
 ---
 
-## 8. Pipeline (futuro)
+## 9. Pipeline (futuro)
 
 Quando rodar em CI (GitHub Actions, próxima entrega):
 
-- Job único `mvn test` que sobe o Postgres via `services:` do GitHub Actions, cria a `bancodigital_test`, e roda toda a suite (unit + integração).
+- `mvn test`: sobe Postgres via `services:`, cria `bancodigital_test`, roda unit + integração.
+- `mvn verify`: adiciona Chrome headless (action `browser-actions/setup-chrome`) e roda os E2E.
 - Cache do `~/.m2/repository` para acelerar.
 
 ---
 
-## 9. Critério de pronto
+## 10. Critério de pronto
 
 - [x] Infraestrutura `AbstractIntegrationTest` funcionando contra Postgres local.
 - [x] `SignupIntegrationTest` cobrindo happy path + 2 cenários de erro.
 - [x] `InvestmentIntegrationTest` cobrindo invest + saldo insuficiente + requer auth.
+- [x] Infraestrutura `AbstractE2ETest` com Selenium + TRUNCATE + headless toggle.
+- [x] `SignupE2ETest` — 4 casos (happy path + 3 erros de validação).
+- [x] `InvestmentE2ETest` — 5 casos (auth + fluxos + erros).
+- [x] `PerformanceE2ETest` — 4 casos com SLA mensurado.
+- [x] `mvn verify` roda tudo localmente (125 testes, 0 falhas).
 - [ ] Repositórios cobertos (User/Account/Transaction/Investment) via `@JdbcTest`.
 - [ ] 4 suítes de serviço verdes (~18 testes).
 - [ ] 2 suítes web verdes (~12 testes).
-- [ ] `mvn verify` roda tudo localmente.
-- [ ] README atualizado com instruções de execução (`Docker daemon precisa estar rodando`).
