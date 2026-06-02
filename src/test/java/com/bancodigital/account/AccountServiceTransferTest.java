@@ -209,5 +209,42 @@ class AccountServiceTransferTest {
         verify(accountRepository, never()).debit(anyLong(), any());
         verifyNoInteractions(transactionRepository);
     }
+    @Test
+    void transferThrowsWhenDestinationIsNull() {
+        // Ensinando o mock que a conta origem existe
+        Account source = new Account(SOURCE_ACCOUNT_ID, "C001", bd("500.00"), SOURCE_USER_ID);
+        when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
+        
+        // Ação: Mandar null no destino
+        DomainException ex = assertThrows(DomainException.class, 
+            () -> service.transfer(SOURCE_USER_ID, null, bd("100.00")));
+        assertEquals(Messages.INVALID_AMOUNT_OR_ACCOUNT, ex.getMessage());
+    }
+
+    @Test
+    void transferThrowsWhenDestinationIsEmpty() {
+        // Ação: Mandar espaços em branco no destino
+        Account source = new Account(SOURCE_ACCOUNT_ID, "C001", bd("500.00"), SOURCE_USER_ID);
+        when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
+        
+        DomainException ex = assertThrows(DomainException.class, 
+            () -> service.transfer(SOURCE_USER_ID, "   ", bd("100.00")));
+        assertEquals(Messages.INVALID_AMOUNT_OR_ACCOUNT, ex.getMessage());
+    }
+
+    @Test
+    void transferThrowsWhenSourceBalanceIsNull() {
+        // PREPARAÇÃO: Simulando um erro bizarro onde o banco traz saldo NULL
+        Account source = new Account(SOURCE_ACCOUNT_ID, "C001", null, SOURCE_USER_ID);
+        Account dest = new Account(DEST_ACCOUNT_ID, "C002", bd("100.00"), 2L);
+
+        when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
+        when(accountRepository.findByNumber("C002")).thenReturn(Optional.of(dest));
+
+        // AÇÃO E VERIFICAÇÃO
+        DomainException ex = assertThrows(DomainException.class, 
+            () -> service.transfer(SOURCE_USER_ID, "C002", bd("50.00")));
+        assertEquals(Messages.INSUFFICIENT_BALANCE, ex.getMessage());
+    }
     
 }
