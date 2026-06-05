@@ -42,49 +42,34 @@ class TransferE2ETest extends AbstractE2ETest {
     void seedAndLogin() throws Exception {
         long userId = insertUser("Joao Silva", EMAIL, BCRYPT_SENHA123);
         insertAccount("C00001", new BigDecimal("500.00"), userId);
-        
         long destUserId = insertUser("Maria Souza", "maria@email.com", BCRYPT_SENHA123);
         insertAccount("C00002", new BigDecimal("100.00"), destUserId);
-
         driver.get(baseUrl + "/login");
-        
         driver.findElement(By.id("email")).sendKeys(EMAIL);
         driver.findElement(By.id("password")).sendKeys("senha123");
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
-        
-        // O FREIO 1: Espera 1 segundo para o Spring validar a senha e gerar a sessão
-        Thread.sleep(1000);
+        driver.findElement(By.xpath("//button[text()='Entrar']")).click();
+        Thread.sleep(1000); 
     }
 
     @Test
     void transferE2EHappyPath() throws Exception {
         driver.get(baseUrl + "/transfer");
-        
         driver.findElement(By.id("destination")).sendKeys("C00002");
-        driver.findElement(By.id("amount")).sendKeys("200.00");
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
-
-        // O FREIO 2: Espera 1 segundo para o banco transferir e a tela recarregar
-        Thread.sleep(1000);
-
+        driver.findElement(By.id("amount")).sendKeys("200"); 
+        driver.findElement(By.xpath("//button[text()='Transferir']")).click();
+        Thread.sleep(1500);
         String pageSource = driver.getPageSource();
-        // Procura a classe CSS da caixa verde
-        assertTrue(pageSource.contains("alert success"), "A página deve exibir a mensagem verde de sucesso");
+        assertTrue(pageSource.contains("alert success"), "O sistema deve exibir a caixa verde de sucesso");
     }
 
     @Test
     void transferE2ERejectsInsufficientBalance() throws Exception {
         driver.get(baseUrl + "/transfer");
-        
         driver.findElement(By.id("destination")).sendKeys("C00002");
-        driver.findElement(By.id("amount")).sendKeys("600.00");
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
-
-        // O FREIO 3: Espera 1 segundo para o banco recusar e a tela recarregar
-        Thread.sleep(1000);
-
+        driver.findElement(By.id("amount")).sendKeys("600"); 
+        driver.findElement(By.xpath("//button[text()='Transferir']")).click();
+        Thread.sleep(1500);
         String pageSource = driver.getPageSource();
-        // Procura a classe CSS da caixa vermelha
-        assertTrue(pageSource.contains("alert error"), "A página deve exibir a mensagem vermelha de erro");
+        assertTrue(pageSource.contains("alert error"), "O sistema deve exibir a caixa vermelha informando que não tem saldo");
     }
 }
