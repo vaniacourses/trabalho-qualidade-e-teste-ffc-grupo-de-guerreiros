@@ -20,7 +20,6 @@ class TransferE2ETest extends AbstractE2ETest {
     private static final String EMAIL = "joao@email.com";
     private static final String BCRYPT_SENHA123 = "$2a$10$fy1UbQcOh5tYVPpfzhX5ceRqLpA1OGa7hsalIwmD2oiNXrnlbSu66";
 
-    // 1. O OVERWRITE: Substituindo o motor do Chrome pelo Firefox
     @BeforeEach
     @Override
     void setupDriver() {
@@ -29,19 +28,16 @@ class TransferE2ETest extends AbstractE2ETest {
         
         boolean headless = "true".equalsIgnoreCase(System.getProperty("headless", "false"));
         if (headless) {
-            options.addArguments("-headless"); // A flag do Firefox é um pouco diferente da do Chrome
+            options.addArguments("-headless"); 
         }
         
-        // Injeta a Raposa na variável da classe mãe
         driver = new FirefoxDriver(options);
         
-        // Refaz a faxina de banco de dados obrigatória que a classe mãe fazia
         baseUrl = "http://localhost:" + port;
         jdbc.execute("TRUNCATE TABLE transactions, investments, accounts, users RESTART IDENTITY CASCADE");
         jdbc.execute("ALTER SEQUENCE account_number_seq RESTART WITH 100");
     }
 
-    // 2. O PREPARO: Criando os dados e logando no site
     @BeforeEach
     void seedAndLogin() {
         long userId = insertUser("Joao Silva", EMAIL, BCRYPT_SENHA123);
@@ -51,10 +47,13 @@ class TransferE2ETest extends AbstractE2ETest {
         insertAccount("C00002", new BigDecimal("100.00"), destUserId);
 
         driver.get(baseUrl + "/login");
-        driver.findElement(By.name("username")).sendKeys(EMAIL);
-        driver.findElement(By.name("password")).sendKeys("senha123");
+        
+        // CORREÇÃO AQUI: Lendo o HTML oficial do grupo (id="email" e id="password")
+        driver.findElement(By.id("email")).sendKeys(EMAIL);
+        driver.findElement(By.id("password")).sendKeys("senha123");
         driver.findElement(By.cssSelector("button[type='submit']")).click();
     }
+
     @Test
     void transferE2EHappyPath() {
         driver.get(baseUrl + "/transfer");
