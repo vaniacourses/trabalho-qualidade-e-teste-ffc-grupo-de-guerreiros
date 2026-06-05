@@ -22,10 +22,10 @@ class TransferIntegrationTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void seed() {
+        // Criando as duas contas zeradas no banco real antes de cada teste
         userId = insertUser("Joao Silva", EMAIL, BCRYPT_SENHA123);
-        // Conta origem com 500 reais
         sourceAccountId = insertAccount("C00001", new BigDecimal("500.00"), userId);
-        // Conta destino com 100 reais
+        
         long destUserId = insertUser("Maria Souza", "maria@email.com", BCRYPT_SENHA123);
         destAccountId = insertAccount("C00002", new BigDecimal("100.00"), destUserId);
     }
@@ -33,19 +33,46 @@ class TransferIntegrationTest extends AbstractIntegrationTest {
     @Test
     @WithMockUser(username = EMAIL)
     void transferEndpointExecutesTransferSuccessfully() throws Exception {
-        // Ação: Transferir 200 reais para Maria
+        // AÇÃO: Transferir 200 reais
         mockMvc.perform(post("/transfer")
                 .param("destination", "C00002")
                 .param("amount", "200.00")
                 .with(csrf()))
                .andExpect(status().is3xxRedirection())
-               .andExpect(redirectedUrl("/balance")); // Supondo o redirect pós-transferência
+               .andExpect(redirectedUrl("/transfer")); // <-- CORRIGIDO AQUI!
 
-        // Verificação: Saldo origem deve ser 300, destino 300
+        // VERIFICAÇÃO: Checando os saldos fisicamente no PostgreSQL
         BigDecimal sourceBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, sourceAccountId);
         assertEquals(0, sourceBalance.compareTo(new BigDecimal("300.00")));
 
         BigDecimal destBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, destAccountId);
         assertEquals(0, destBalance.compareTo(new BigDecimal("300.00")));
+        
+        // Confirmando que gerou uma linha de extrato no banco
+        Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ? AND type = 'transfer'", Long.class, sourceAccountId);
+        assertEquals(1L, txCount);
+    }
+
+    @Test
+    @WithMockUser(username = EMAIL)
+    void transferEndpointRejectsInsufficientBalanceAndRollbacks() throws Exception {
+        // AÇÃO: Tentar transferir 600 reais (origem só tem 500)
+        mockMvc.perform(post("/transfer")
+                .param("destination", "C00002")
+                .param("amount", "600.00")
+                .with(csrf()))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrl("/transfer")); 
+
+        // VERIFICAÇÃO (ROLLBACK): O banco deve barrar e manter o saldo original de 500
+        BigDecimal sourceBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, sourceAccountId);
+        assertEquals(0, sourceBalance.compareTo(new BigDecimal("500.00")));
+
+        BigDecimal destBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, destAccountId);
+        assertEquals(0, destBalance.compareTo(new BigDecimal("100.00")));
+        
+        // Confirmando que a transação falsa NÃO foi salva pela metade
+        Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ?", Long.class, sourceAccountId);
+        assertEquals(0L, txCount);
     }
 }
