@@ -86,8 +86,8 @@ class MoneyTest {
     @Test
     void formatProducesStringWithBrazilianCurrency() {
         String out = Money.format(new BigDecimal("1234.56"));
-        assertTrue(out.contains("1.234,56"), "expected thousands with dot and decimal with comma in " + out);
-        assertTrue(out.contains("R$"), "expected R$ prefix in " + out);
+        assertTrue(out.contains("1.234,56"), "O valor em decimal deveria possuir ponto na casa do milhar e virgula antes dos decimais em: " + out);
+        assertTrue(out.contains("R$"), "Deveria haver R$ antes do texto em: " + out);
     }
 
     @Test
@@ -95,4 +95,24 @@ class MoneyTest {
         String out = Money.format(null);
         assertTrue(out.contains("0,00"));
     }
+
+    @Test
+    void parseOrNullRemovesCurrencyPrefixes() {
+        assertEquals(new BigDecimal("100.00"), Money.parseOrNull("R$ 100"));
+        assertEquals(new BigDecimal("100.00"), Money.parseOrNull("$ 100"));
+        assertEquals(new BigDecimal("100.00"), Money.parseOrNull("US$ 100"));
+    }
+
+    @Test
+    void parseOrNullHandlesAccountingNegativeFormat(){
+        assertEquals(new BigDecimal("-50.00"), Money.parseOrNull("(50.00)"));
+        assertEquals(new BigDecimal("-50.00"), Money.parseOrNull("R$ (50.00)"));
+    }
+
+    @Test
+    void parseOrNullRejectsExcessiveDecimalPrecision() {
+        assertNull(Money.parseOrNull("100.12345"));
+        assertEquals(new BigDecimal("100.12"), Money.parseOrNull("100.1234"));
+    }
+    
 }
