@@ -98,14 +98,14 @@ Notas sem evidência viram chute. Quando a evidência não existir, registrar co
 
 > Mede uso de recursos sob carga.
 
-| Subcaracterística | O que medir | Como medir | Evidência | Nota (preliminar) |
+| Subcaracterística | O que medir | Como medir | Evidência | Nota |
 |---|---|---|---|---|
-| Comportamento temporal | p95 de latência por endpoint | Rodar k6 / JMeter contra `/login`, `/deposit`, `/transfer` e gerar relatório | **Não coletado** | **2** |
+| Comportamento temporal | Tempo de resposta por operação chave | SLA medido nos testes E2E: página carrega ≤ 2s, submit responde ≤ 3s | [`PerformanceE2ETest`](../src/test/java/com/bancodigital/e2e/PerformanceE2ETest.java) — 4 casos verdes | **3** |
 | Utilização de recursos | RAM/CPU em carga sustentada | `docker stats` durante teste de carga; expor `/actuator/metrics` | Actuator presente, mas só `/health` exposto | **2** |
 | Capacidade | Conexões DB simultâneas suportadas | Pool HikariCP default (10 conn); teste com 50 reqs concorrentes | Default do starter, **não tunado** | **2** |
 
 **Nota da característica: 2 (Marginal).**
-**Justificativa**: Não há nenhuma métrica objetiva coletada hoje. Actuator está no `pom.xml` mas apenas `/health` está exposto ([`SecurityConfig.java:22`](../src/main/java/com/bancodigital/config/SecurityConfig.java#L22)). A nota sobe para **3** assim que houver um relatório de k6 documentado, e para **4** com endpoints `/actuator/prometheus` + dashboard. Para sistema acadêmico sem requisito explícito de SLA, **2 é justificável**, mas precisa ficar explícito que **é por escolha de escopo, não por incapacidade**.
+**Justificativa**: Comportamento temporal subiu para **3** com a adição de `PerformanceE2ETest` (SLAs de 2s e 3s medidos em browser real). Utilização de recursos e capacidade permanecem em **2** — sem teste de carga (k6/JMeter) nem tuning de pool. A nota sobe para **3** na característica assim que `utilização de recursos` for medida; para **4** com `/actuator/prometheus` + dashboard Grafana.
 
 ---
 
