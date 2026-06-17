@@ -23,7 +23,6 @@ import com.bancodigital.transaction.TransactionRepository;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceWithdrawTest {
-
     private static final long USER_ID = 1L;
     private static final long ACCOUNT_ID = 10L;
 
@@ -31,7 +30,6 @@ class AccountServiceWithdrawTest {
     @Mock TransactionRepository transactionRepository;
 
     private AccountService service;
-
     @BeforeEach
     void setUp() {
         service = new AccountService(accountRepository, transactionRepository);
@@ -44,10 +42,7 @@ class AccountServiceWithdrawTest {
         Account account = new Account(ACCOUNT_ID, "C001", bd("500.00"), USER_ID);
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
-
         service.withdraw(USER_ID, bd("100.00"));
-
-        // Garante que o banco foi chamado para debitar e registrar a transação
         verify(accountRepository).debit(ACCOUNT_ID, bd("100.00"));
         verify(transactionRepository).recordWithdraw(ACCOUNT_ID, bd("100.00"));
     }
@@ -57,12 +52,10 @@ class AccountServiceWithdrawTest {
         Account account = new Account(ACCOUNT_ID, "C001", bd("50.00"), USER_ID);
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
-
         DomainException ex = assertThrows(DomainException.class, 
             () -> service.withdraw(USER_ID, bd("100.00")));
         
         assertEquals(Messages.INSUFFICIENT_BALANCE, ex.getMessage());
-        // Garante que o débito NUNCA foi chamado (Rollback)
         verify(accountRepository, never()).debit(anyLong(), any());
     }
 
@@ -71,8 +64,6 @@ class AccountServiceWithdrawTest {
         Account account = new Account(ACCOUNT_ID, "C001", bd("50000.00"), USER_ID);
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
-
-        // Tenta sacar 1 centavo a mais que o limite diário de 10.000,00
         DomainException ex = assertThrows(DomainException.class, 
             () -> service.withdraw(USER_ID, bd("10000.01")));
         
@@ -90,7 +81,7 @@ class AccountServiceWithdrawTest {
             () -> service.withdraw(USER_ID, bd("-50.00")));
         
         assertEquals(Messages.INVALID_AMOUNT, ex.getMessage());
-        // Garante que nenhuma transação falsa foi registrada
+        
         verifyNoInteractions(transactionRepository);
     }
 }
