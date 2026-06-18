@@ -43,8 +43,6 @@ class TransferIntegrationTest extends AbstractIntegrationTest {
 
         BigDecimal destBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, destAccountId);
         assertEquals(0, destBalance.compareTo(new BigDecimal("300.00")));
-        
-        // Confirmando que gerou uma linha de extrato no banco
         Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ? AND type = 'transfer'", Long.class, sourceAccountId);
         assertEquals(1L, txCount);
     }
@@ -67,4 +65,19 @@ class TransferIntegrationTest extends AbstractIntegrationTest {
         Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ?", Long.class, sourceAccountId);
         assertEquals(0L, txCount);
     }
+    @Test
+    @WithMockUser(username = EMAIL)
+    void transferEndpointRejectsSameAccount() throws Exception {
+        mockMvc.perform(post("/transfer")
+                .param("destination", "C00001")
+                .param("amount", "100.00")
+                .with(csrf()))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrl("/transfer"));
+        
+        Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ?", Long.class, sourceAccountId);
+        assertEquals(0L, txCount, "Nenhuma transação deve ser registrada em erro");
+    }
+    
+    
 }
