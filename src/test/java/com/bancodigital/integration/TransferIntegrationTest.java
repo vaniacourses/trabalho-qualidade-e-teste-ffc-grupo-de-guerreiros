@@ -43,8 +43,6 @@ class TransferIntegrationTest extends AbstractIntegrationTest {
 
         BigDecimal destBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, destAccountId);
         assertEquals(0, destBalance.compareTo(new BigDecimal("300.00")));
-        
-        // Confirmando que gerou uma linha de extrato no banco
         Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ? AND type = 'transfer'", Long.class, sourceAccountId);
         assertEquals(1L, txCount);
     }
@@ -67,4 +65,62 @@ class TransferIntegrationTest extends AbstractIntegrationTest {
         Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ?", Long.class, sourceAccountId);
         assertEquals(0L, txCount);
     }
+    @Test
+    @WithMockUser(username = EMAIL)
+    void transferEndpointRejectsSameAccount() throws Exception {
+        mockMvc.perform(post("/transfer")
+                .param("destination", "C00001")
+                .param("amount", "100.00")
+                .with(csrf()))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrl("/transfer"));
+        
+        Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ?", Long.class, sourceAccountId);
+        assertEquals(0L, txCount, "Nenhuma transação deve ser registrada em erro");
+    }
+    @Test
+    @WithMockUser(username = EMAIL)
+    void transferEndpointRejectsNonExistentDestination() throws Exception {
+        mockMvc.perform(post("/transfer")
+                .param("destination", "C99999") // Destino inexistente
+                .param("amount", "100.00")
+                .with(csrf()))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrl("/transfer"));
+        
+        Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ?", Long.class, sourceAccountId);
+        assertEquals(0L, txCount);
+    }
+
+    @Test
+    @WithMockUser(username = EMAIL)
+    void transferEndpointRejectsZeroAmount() throws Exception {
+        mockMvc.perform(post("/transfer")
+                .param("destination", "C00002")
+                .param("amount", "0.00")
+                .with(csrf()))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrl("/transfer"));
+               
+        Long txCount = jdbc.queryForObject("SELECT COUNT(*) FROM transactions WHERE source_account = ?", Long.class, sourceAccountId);
+        assertEquals(0L, txCount);
+    }
+
+    @Test
+    @WithMockUser(username = EMAIL)
+    void transferEndpointExecutesExactBalanceTransfer() throws Exception {
+        mockMvc.perform(post("/transfer")
+                .param("destination", "C00002")
+                .param("amount", "500.00")
+                .with(csrf()))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrl("/transfer"));
+               
+        BigDecimal sourceBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, sourceAccountId);
+        assertEquals(0, sourceBalance.compareTo(BigDecimal.ZERO), "O saldo da origem deve zerar perfeitamente");
+
+        BigDecimal destBalance = jdbc.queryForObject("SELECT balance FROM accounts WHERE id = ?", BigDecimal.class, destAccountId);
+        assertEquals(0, destBalance.compareTo(new BigDecimal("600.00")), "O destino deve receber o valor");
+    }
+    
 }
