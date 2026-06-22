@@ -98,14 +98,19 @@ mvn failsafe:integration-test -Dit.test='SignupE2ETest' -Dheadless=false
 | [`TransactionTypeTest`](src/test/java/com/bancodigital/transaction/TransactionTypeTest.java) | 9 | unitário puro |
 | [`StatementLineTest`](src/test/java/com/bancodigital/transaction/StatementLineTest.java) | 15 | unitário puro |
 | [`AccountServiceTest`](src/test/java/com/bancodigital/account/AccountServiceTest.java) | 23 | unitário (validações puras) |
+| [`AccountServiceTransferTest`](src/test/java/com/bancodigital/account/AccountServiceTransferTest.java) | 11 | unitário (Mockito para concorrência e travas) |
+| [`AccountServiceWithdrawTest`](src/test/java/com/bancodigital/account/AccountServiceWithdrawTest.java) | 4 | unitário (Mockito para saques e limites) |
 | [`SignupServiceTest`](src/test/java/com/bancodigital/signup/SignupServiceTest.java) | 18 | unitário (Mockito para `register`) |
 | [`InvestmentServiceTest`](src/test/java/com/bancodigital/investment/InvestmentServiceTest.java) | 25 | unitário (Mockito para `query`/`execute`) |
+| [`TransferIntegrationTest`](src/test/java/com/bancodigital/integration/TransferIntegrationTest.java) | 6 | integração (MockMvc + Postgres + Rollback ACID) |
+| [`WithdrawIntegrationTest`](src/test/java/com/bancodigital/integration/WithdrawIntegrationTest.java) | 3 | integração (MockMvc + Postgres + Rollback ACID) |
 | [`SignupIntegrationTest`](src/test/java/com/bancodigital/integration/SignupIntegrationTest.java) | 3 | integração (MockMvc + Postgres) |
 | [`InvestmentIntegrationTest`](src/test/java/com/bancodigital/integration/InvestmentIntegrationTest.java) | 3 | integração (MockMvc + Postgres) |
+| [`TransferE2ETest`](src/test/java/com/bancodigital/e2e/TransferE2ETest.java) | 2 | E2E Selenium (fluxo feliz + erro de saldo) |
 | [`SignupE2ETest`](src/test/java/com/bancodigital/e2e/SignupE2ETest.java) | 4 | E2E Selenium (happy path + 3 erros) |
 | [`InvestmentE2ETest`](src/test/java/com/bancodigital/e2e/InvestmentE2ETest.java) | 5 | E2E Selenium (auth + invest + resgatar + 2 erros) |
 | [`PerformanceE2ETest`](src/test/java/com/bancodigital/e2e/PerformanceE2ETest.java) | 4 | E2E Selenium (SLA: 2s página, 3s submit) |
-| **Total** | **125** | |
+| **Total** | **151** | |
 
 Estratégia detalhada, padrões e cenários planejados para os outros domínios em [docs/TESTES_UNITARIOS.md](docs/TESTES_UNITARIOS.md) e [docs/TESTES_INTEGRACAO.md](docs/TESTES_INTEGRACAO.md).
 
