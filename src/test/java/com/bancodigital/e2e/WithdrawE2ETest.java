@@ -4,37 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.springframework.boot.test.web.server.LocalServerPort;
-
-import io.github.bonigarcia.wdm.WebDriverManager;
 
 class WithdrawE2ETest extends AbstractE2ETest {
 
-    @LocalServerPort
-    private int port;
-
-        private static final String EMAIL = "joao@email.com";
-
-    @BeforeEach
-    @Override
-    void setupDriver() {
-        WebDriverManager.firefoxdriver().setup();
-        FirefoxOptions options = new FirefoxOptions();
-        
-        boolean headless = "true".equalsIgnoreCase(System.getProperty("headless", "false"));
-        if (headless) {
-            options.addArguments("-headless"); 
-        }
-        
-        driver = new FirefoxDriver(options);
-        
-        baseUrl = "http://localhost:" + port;
-        jdbc.execute("TRUNCATE TABLE transactions, investments, accounts, users RESTART IDENTITY CASCADE");
-        jdbc.execute("ALTER SEQUENCE account_number_seq RESTART WITH 100");
-
-    }
+    private static final String EMAIL = "joao@email.com";
 
     @BeforeEach
     void seedAndLogin() throws Exception {

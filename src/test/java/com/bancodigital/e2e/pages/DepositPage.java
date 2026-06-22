@@ -1,12 +1,11 @@
 package com.bancodigital.e2e.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 public class DepositPage extends BasePage{
-
-    private final WebDriver driver = null;
 
     // Locators
     private final By tituloPagina = By.tagName("h1");
@@ -14,7 +13,7 @@ public class DepositPage extends BasePage{
     private final By numeroConta = By.xpath("//p[contains(text(),'Conta')]/strong");
 
     private final By campoValorDeposito = By.id("amount");
-    private final By botaoDepositar = By.cssSelector("button[type='submit']");
+    private final By botaoDepositar = By.xpath("//button[text()='Depositar']");
 
     public DepositPage(WebDriver driver) {
         super(driver);
@@ -46,6 +45,17 @@ public class DepositPage extends BasePage{
     public void realizarDeposito(String valor) {
         informarValor(valor);
         clicarDepositar();
+    }
+
+    /**
+     * Submete o formulário ignorando a validação HTML5 (min/step) do input,
+     * para exercitar a validação do lado do servidor com valores como 0 ou negativos.
+     */
+    public void realizarDepositoIgnorandoValidacao(String valor) {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        WebElement campo = driver.findElement(campoValorDeposito);
+        js.executeScript("arguments[0].value = arguments[1];", campo, valor);
+        js.executeScript("HTMLFormElement.prototype.submit.call(arguments[0].form);", campo);
     }
 
     public boolean estaNaPagina() {

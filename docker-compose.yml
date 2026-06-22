@@ -32,7 +32,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:-bancodigital}
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - "8090:8080"
+      - "8080:8080"
 
   adminer:
     image: adminer:latest
