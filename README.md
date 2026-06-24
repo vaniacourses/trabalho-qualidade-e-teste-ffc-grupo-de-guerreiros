@@ -48,6 +48,7 @@ O **Banco Digital** simula as operações fundamentais de um banco para fins aca
 | 🚪 **Logout** | Encerra a sessão. | `POST /logout` |
 
 Stack completa, camadas, schema do banco e decisões de design em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Relatorio completo do projeto em https://docs.google.com/document/d/124YKVq6ZCDUs38EOxJ1aFhcpEkRVjqlFrP_7vXAKWuI/edit?tab=t.0
 
 ---
 
