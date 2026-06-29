@@ -2,7 +2,6 @@ package com.bancodigital.investment;
 
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
@@ -54,6 +53,14 @@ class InvestmentServiceTest {
     }
 
     private BigDecimal bd(String s) { return new BigDecimal(s); }
+
+    // A conversao monetaria ocorre antes da lambda para isolar no assertThrows
+    // apenas a execucao do servico que deve produzir a DomainException.
+    private DomainException assertExecuteThrows(String operation, String amount) {
+        BigDecimal parsedAmount = bd(amount);
+        return assertThrows(DomainException.class,
+                () -> service.execute(USER_ID, operation, parsedAmount));
+    }
 
     // ------------------------------------------------------------
     // calculateInterest (puro)
@@ -218,8 +225,7 @@ class InvestmentServiceTest {
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
 
-        DomainException ex = assertThrows(DomainException.class,
-                () -> service.execute(USER_ID, "investir", bd("100.00")));
+        DomainException ex = assertExecuteThrows("investir", "100.00");
 
         assertEquals(Messages.INSUFFICIENT_ACCOUNT_BALANCE, ex.getMessage());
         verify(accountRepository, never()).debit(anyLong(), any());
@@ -274,8 +280,7 @@ class InvestmentServiceTest {
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
 
-        DomainException ex = assertThrows(DomainException.class,
-                () -> service.execute(USER_ID, "retirar", bd("100.00")));
+        DomainException ex = assertExecuteThrows("retirar", "100.00");
 
         assertEquals(Messages.AMOUNT_EXCEEDS_INVESTED, ex.getMessage());
         verify(accountRepository, never()).credit(anyLong(), any());
@@ -292,8 +297,7 @@ class InvestmentServiceTest {
         when(investmentRepository.findByUserId(USER_ID)).thenReturn(Optional.of(inv));
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
 
-        assertThrows(DomainException.class,
-                () -> service.execute(USER_ID, "investir", bd("100.00")));
+        assertExecuteThrows("investir", "100.00");
         verifyNoInteractions(transactionRepository);
     }
 

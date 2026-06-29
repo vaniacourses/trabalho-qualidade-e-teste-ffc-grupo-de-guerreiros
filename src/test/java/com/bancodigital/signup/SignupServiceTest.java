@@ -134,8 +134,11 @@ class SignupServiceTest {
 
     @Test
     void registerRejectsInvalidForm() {
+        // O formulario e preparado fora da lambda para que somente register
+        // seja a operacao capaz de lancar a excecao esperada.
+        SignupForm invalidForm = form("", "joao@email.com", "12345678");
         DomainException ex = assertThrows(DomainException.class,
-                () -> service.register(form("", "joao@email.com", "12345678")));
+                () -> service.register(invalidForm));
 
         assertEquals(Messages.INVALID_NAME, ex.getMessage());
         verifyNoInteractions(userRepository, accountRepository, passwordEncoder);
@@ -145,8 +148,11 @@ class SignupServiceTest {
     void registerRejectsDuplicateEmail() {
         when(userRepository.existsByEmail("joao@email.com")).thenReturn(true);
 
+        // A preparacao antecipada do formulario torna inequivoco o ponto que
+        // deve falhar e atende ao criterio de uma chamada na lambda.
+        SignupForm duplicateForm = form("João", "joao@email.com", "12345678");
         DomainException ex = assertThrows(DomainException.class,
-                () -> service.register(form("João", "joao@email.com", "12345678")));
+                () -> service.register(duplicateForm));
 
         assertEquals(Messages.DUPLICATE_EMAIL, ex.getMessage());
         verify(passwordEncoder, never()).encode(anyString());

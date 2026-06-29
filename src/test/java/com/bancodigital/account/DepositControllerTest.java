@@ -1,22 +1,21 @@
 package com.bancodigital.account;
 
-import com.bancodigital.auth.CurrentUser;
-import com.bancodigital.auth.User;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import com.bancodigital.auth.CurrentUser;
+import com.bancodigital.auth.User;
 
 @ExtendWith(MockitoExtension.class)
-public class DepositControllerTest {
+class DepositControllerTest {
 
     @Mock AccountService accountService;
     @Mock CurrentUser currentUser;
@@ -27,34 +26,19 @@ public class DepositControllerTest {
     private DepositController controller;
 
     @BeforeEach
-    public void setup(){
+    void setup(){
         controller = new DepositController(accountService,currentUser);
     }
 
-    @Test
-    public void DepositHappyPath(){
+    // Os tres valores percorrem o mesmo contrato do controller; parametrizar
+    // evita duplicacao e mantem cada entrada identificada no relatorio JUnit.
+    @ParameterizedTest
+    @ValueSource(strings = {"500.00", "0.0", "-100.00"})
+    void depositAlwaysRedirectsToForm(String amount){
         User user = new User(7L, "Joao", "joao@email.com", "hash");
         when(currentUser.required(principal)).thenReturn(user);
 
-        assertEquals("redirect:/deposit", controller.submit(principal, "500.00", redirectAttributes));
-
-    }
-
-    @Test
-    public void DepositZero(){
-        User user = new User(7L, "João", "joao@email.com", "hash");
-        when (currentUser.required(principal)).thenReturn(user);
-
-        assertEquals("redirect:/deposit",controller.submit(principal, "0.0", redirectAttributes));
-    }
-
-    @Test
-    public void DepositInvalid(){
-        User user = new User(7L, "João", "joao@email.com", "hash");
-        when (currentUser.required(principal)).thenReturn(user);
-
-        assertEquals("redirect:/deposit",controller.submit(principal, "-100.00", redirectAttributes));
-
+        assertEquals("redirect:/deposit", controller.submit(principal, amount, redirectAttributes));
     }
 
 }

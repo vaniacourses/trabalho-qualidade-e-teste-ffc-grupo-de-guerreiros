@@ -1,14 +1,18 @@
 package com.bancodigital.e2e;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.HashMap;
 
+import com.bancodigital.e2e.pages.LoginPage;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -77,5 +81,19 @@ public abstract class AbstractE2ETest {
         long userId = insertUser("Joao Silva", "joao@email.com", BCRYPT_TEST_PASSWORD);
         insertAccount("C00001", new BigDecimal("500.00"), userId);
         return userId;
+    }
+
+    // O Page Object concentra o preenchimento do login e aguarda o redirect,
+    // impedindo que o teste tente abrir uma rota protegida antes da autenticacao.
+    protected void loginAs(String email, String password) {
+        new LoginPage(driver, baseUrl).loginAs(email, password);
+    }
+
+    // A espera explicita sincroniza o Selenium com a resposta visual do sistema
+    // sem depender de pausas fixas, que variam conforme a maquina.
+    protected void waitForAlert(String type) {
+        new WebDriverWait(driver, Duration.ofSeconds(5))
+                .until(ExpectedConditions.visibilityOfElementLocated(
+                        org.openqa.selenium.By.cssSelector("p.alert." + type)));
     }
 }

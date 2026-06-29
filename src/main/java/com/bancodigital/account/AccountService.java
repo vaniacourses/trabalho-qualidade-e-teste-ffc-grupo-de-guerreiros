@@ -1,6 +1,7 @@
 package com.bancodigital.account;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class AccountService {
 
     public Account getAccount(long userId) {
         return accountRepository.findByUserId(userId)
-                .orElseThrow(() -> new DomainException("Conta não encontrada."));
+                .orElseThrow(() -> new DomainException(Messages.ACCOUNT_NOT_FOUND));
     }
 
     public String validateWithdraw(BigDecimal balance, BigDecimal amount) {
@@ -55,7 +56,7 @@ public class AccountService {
         BigDecimal amount = Money.normalize(rawAmount);
         Account summary = getAccount(userId);
         Account account = accountRepository.findByIdForUpdate(summary.id())
-                .orElseThrow(() -> new DomainException("Conta não encontrada."));
+                .orElseThrow(() -> new DomainException(Messages.ACCOUNT_NOT_FOUND));
         String error = validateWithdraw(account.balance(), amount);
         if (!"OK".equals(error)) throw new DomainException(error);
         accountRepository.debit(account.id(), amount);
@@ -69,7 +70,7 @@ public class AccountService {
         String error = validateDeposit(amount);
         if (!"OK".equals(error)) throw new DomainException(error);
         Account account = accountRepository.findByIdForUpdate(summary.id())
-                .orElseThrow(() -> new DomainException("Conta não encontrada."));
+                .orElseThrow(() -> new DomainException(Messages.ACCOUNT_NOT_FOUND));
         accountRepository.credit(account.id(), amount);
         transactionRepository.recordDeposit(account.id(), amount);
     }
@@ -79,21 +80,27 @@ public class AccountService {
         BigDecimal amount = Money.normalize(rawAmount);
         Account sourceSummary = getAccount(userId);
         String destinationTrim = destinationNumber == null ? null : destinationNumber.trim();
-        Account destination = (destinationTrim == null || destinationTrim.isEmpty())
-                ? null
-                : accountRepository.findByNumber(destinationTrim).orElse(null);
+        // Optional preserva explicitamente a ausência da conta de destino para
+        // que a validação possa rejeitá-la sem manter uma referência anulável.
+        Optional<Account> destinationCandidate = (destinationTrim == null || destinationTrim.isEmpty())
+                ? Optional.empty()
+                : accountRepository.findByNumber(destinationTrim);
         String error = validateTransfer(amount, destinationTrim, sourceSummary.number(),
-                sourceSummary.balance(), destination != null);
+                sourceSummary.balance(), destinationCandidate.isPresent());
         if (!"OK".equals(error)) throw new DomainException(error);
 
+        // Após a validação, orElseThrow formaliza a garantia de presença usada
+        // abaixo e elimina o possível NullPointerException apontado pelo Sonar.
+        Account destination = destinationCandidate
+                .orElseThrow(() -> new DomainException(Messages.INVALID_DESTINATION_ACCOUNT));
         long sourceId = sourceSummary.id();
         long destinationId = destination.id();
         long firstId = Math.min(sourceId, destinationId);
         long secondId = Math.max(sourceId, destinationId);
         Account first = accountRepository.findByIdForUpdate(firstId)
-                .orElseThrow(() -> new DomainException("Conta não encontrada."));
+                .orElseThrow(() -> new DomainException(Messages.ACCOUNT_NOT_FOUND));
         Account second = accountRepository.findByIdForUpdate(secondId)
-                .orElseThrow(() -> new DomainException("Conta não encontrada."));
+                .orElseThrow(() -> new DomainException(Messages.ACCOUNT_NOT_FOUND));
         Account currentSource = sourceId == first.id() ? first : second;
         if (currentSource.balance() == null || currentSource.balance().compareTo(amount) < 0) {
             throw new DomainException(Messages.INSUFFICIENT_BALANCE);

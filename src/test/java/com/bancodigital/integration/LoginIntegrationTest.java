@@ -41,8 +41,8 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
         // SecurityFilterChain, CustomUserDetailsService, JdbcUserRepository e BCrypt.
         insertUser("Joao Silva", EMAIL, BCRYPT_SENHA123);
 
-        // O POST usa csrf() porque o Spring Security bloqueia formularios sem token;
-        // isso confirma que o teste passa pela mesma protecao usada em producao.
+        // O envio inclui a protecao CSRF exigida pelo Spring Security, confirmando
+        // que o teste atravessa a mesma barreira aplicada ao formulario real.
         MvcResult result = mockMvc.perform(post("/login")
                 .param("email", EMAIL)
                 .param("password", PASSWORD)

@@ -40,6 +40,14 @@ class AccountServiceTransferTest {
         service = new AccountService(accountRepository, transactionRepository);
     }
     private BigDecimal bd(String s) { return new BigDecimal(s); }
+
+    // O valor e convertido antes da lambda para que o assertThrows contenha
+    // somente a chamada cuja DomainException realmente esta sendo verificada.
+    private DomainException assertTransferThrows(String destination, String amount) {
+        BigDecimal parsedAmount = bd(amount);
+        return assertThrows(DomainException.class,
+                () -> service.transfer(SOURCE_USER_ID, destination, parsedAmount));
+    }
     @Test
     void transferHappyPath() {
         Account source = new Account(SOURCE_ACCOUNT_ID, "C001", bd("500.00"), SOURCE_USER_ID);
@@ -81,8 +89,7 @@ class AccountServiceTransferTest {
         when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
         when(accountRepository.findByNumber("C002")).thenReturn(Optional.of(dest));
         
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, "C002", bd("50.00")));
+        DomainException ex = assertTransferThrows("C002", "50.00");
         
         assertEquals(Messages.INSUFFICIENT_BALANCE, ex.getMessage());
         
@@ -95,8 +102,7 @@ class AccountServiceTransferTest {
     void transferThrowsWhenSourceAccountMissing() {
         when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.empty());
 
-        assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, "C002", bd("100.00")));
+        assertTransferThrows("C002", "100.00");
         
         verifyNoInteractions(transactionRepository);
     }
@@ -108,8 +114,7 @@ class AccountServiceTransferTest {
         
         when(accountRepository.findByNumber("C999")).thenReturn(Optional.empty());
 
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, "C999", bd("100.00")));
+        DomainException ex = assertTransferThrows("C999", "100.00");
 
         assertEquals(Messages.INVALID_DESTINATION_ACCOUNT, ex.getMessage());
         verifyNoInteractions(transactionRepository);
@@ -120,8 +125,7 @@ class AccountServiceTransferTest {
         Account source = new Account(SOURCE_ACCOUNT_ID, "C001", bd("500.00"), SOURCE_USER_ID);
         when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
 
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, "C001", bd("100.00")));
+        DomainException ex = assertTransferThrows("C001", "100.00");
 
         assertEquals(Messages.SAME_ACCOUNT, ex.getMessage());
         verify(accountRepository, never()).findByIdForUpdate(anyLong());
@@ -169,8 +173,7 @@ class AccountServiceTransferTest {
         when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
         when(accountRepository.findByNumber("C002")).thenReturn(Optional.of(dest));
 
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, "C002", bd("-50.00")));
+        DomainException ex = assertTransferThrows("C002", "-50.00");
         
         assertEquals(Messages.INVALID_AMOUNT_OR_ACCOUNT, ex.getMessage());
         
@@ -182,8 +185,7 @@ class AccountServiceTransferTest {
         Account source = new Account(SOURCE_ACCOUNT_ID, "C001", bd("500.00"), SOURCE_USER_ID);
         when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
         
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, null, bd("100.00")));
+        DomainException ex = assertTransferThrows(null, "100.00");
         assertEquals(Messages.INVALID_AMOUNT_OR_ACCOUNT, ex.getMessage());
     }
 
@@ -192,8 +194,7 @@ class AccountServiceTransferTest {
         Account source = new Account(SOURCE_ACCOUNT_ID, "C001", bd("500.00"), SOURCE_USER_ID);
         when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
         
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, "   ", bd("100.00")));
+        DomainException ex = assertTransferThrows("   ", "100.00");
         assertEquals(Messages.INVALID_AMOUNT_OR_ACCOUNT, ex.getMessage());
     }
 
@@ -205,8 +206,7 @@ class AccountServiceTransferTest {
         when(accountRepository.findByUserId(SOURCE_USER_ID)).thenReturn(Optional.of(source));
         when(accountRepository.findByNumber("C002")).thenReturn(Optional.of(dest));
 
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.transfer(SOURCE_USER_ID, "C002", bd("50.00")));
+        DomainException ex = assertTransferThrows("C002", "50.00");
         assertEquals(Messages.INSUFFICIENT_BALANCE, ex.getMessage());
     }
     

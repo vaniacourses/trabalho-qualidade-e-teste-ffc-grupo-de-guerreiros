@@ -66,8 +66,8 @@ class StatementIntegrationTest extends AbstractIntegrationTest {
                .andExpect(model().attribute("lines", hasSize(3)))
                .andReturn();
 
-        // A leitura do ModelAndView e usada porque Account e StatementLine sao records;
-        // chamar os acessores diretamente evita dependermos de convencoes JavaBean.
+        // O resultado MVC permite ler os records diretamente pelos seus acessores,
+        // sem depender de convencoes de propriedades JavaBean.
         Account account = (Account) result.getModelAndView().getModel().get("account");
         assertEquals("C00001", account.number());
 
