@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class DepositPage extends BasePage{
 
@@ -43,8 +44,13 @@ public class DepositPage extends BasePage{
     }
 
     public void realizarDeposito(String valor) {
+        WebElement campo = driver.findElement(campoValorDeposito);
         informarValor(valor);
         clicarDepositar();
+        // A troca da pagina confirma que o POST terminou antes de validar o
+        // alerta, evitando leitura prematura do HTML anterior.
+        wait.until(ExpectedConditions.stalenessOf(campo));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("p.alert.success")));
     }
 
     /**
@@ -56,10 +62,14 @@ public class DepositPage extends BasePage{
         WebElement campo = driver.findElement(campoValorDeposito);
         js.executeScript("arguments[0].value = arguments[1];", campo, valor);
         js.executeScript("HTMLFormElement.prototype.submit.call(arguments[0].form);", campo);
+        // O submit via JavaScript contorna somente a validacao HTML5; a espera
+        // ainda exige que o servidor responda e apresente o erro de dominio.
+        wait.until(ExpectedConditions.stalenessOf(campo));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("p.alert.error")));
     }
 
     public boolean estaNaPagina() {
-        return driver.findElement(tituloPagina)
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(tituloPagina))
             .getText()
             .equalsIgnoreCase("Depósito");
     }

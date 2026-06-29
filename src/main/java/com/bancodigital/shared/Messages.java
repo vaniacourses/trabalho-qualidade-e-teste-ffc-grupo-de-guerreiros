@@ -3,6 +3,9 @@ package com.bancodigital.shared;
 public final class Messages {
 
     public static final String INVALID_AMOUNT = "Valor inválido.";
+    // A mensagem compartilhada evita literais duplicados nos serviços e mantém
+    // consistente o erro apresentado quando uma conta deixa de existir.
+    public static final String ACCOUNT_NOT_FOUND = "Conta não encontrada.";
     public static final String INSUFFICIENT_BALANCE = "Saldo insuficiente.";
     public static final String WITHDRAW_LIMIT_EXCEEDED = "Limite máximo por saque excedido.";
     public static final String SAME_ACCOUNT = "Não é possível transferir para a própria conta.";

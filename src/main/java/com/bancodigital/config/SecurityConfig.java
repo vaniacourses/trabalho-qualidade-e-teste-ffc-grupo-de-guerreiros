@@ -10,6 +10,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
+    // Este valor unico mantem todas as etapas da autenticacao na mesma rota.
+    @SuppressWarnings("java:S1075") // Trata-se de rota interna do sistema, nao de endereco externo configuravel.
+    private static final String LOGIN_PATH = "/login";
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
@@ -19,21 +23,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/signup", "/css/**", "/js/**", "/actuator/health").permitAll()
+                .requestMatchers(LOGIN_PATH, "/signup", "/css/**", "/js/**", "/actuator/health").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
+                .loginPage(LOGIN_PATH)
+                .loginProcessingUrl(LOGIN_PATH)
                 .usernameParameter("email")
-                .passwordParameter("password")
                 .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/login?error")
+                .failureUrl(LOGIN_PATH + "?error")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessUrl(LOGIN_PATH + "?logout")
                 .permitAll()
             )
             .sessionManagement(session -> session

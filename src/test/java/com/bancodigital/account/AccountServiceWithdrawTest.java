@@ -37,6 +37,14 @@ class AccountServiceWithdrawTest {
 
     private BigDecimal bd(String s) { return new BigDecimal(s); }
 
+    // O helper deixa a lambda do assertThrows com uma unica chamada suscetivel
+    // a excecao, mantendo claro que o alvo da verificacao e o saque.
+    private DomainException assertWithdrawThrows(String amount) {
+        BigDecimal parsedAmount = bd(amount);
+        return assertThrows(DomainException.class,
+                () -> service.withdraw(USER_ID, parsedAmount));
+    }
+
     @Test
     void withdrawHappyPath() {
         Account account = new Account(ACCOUNT_ID, "C001", bd("500.00"), USER_ID);
@@ -52,8 +60,7 @@ class AccountServiceWithdrawTest {
         Account account = new Account(ACCOUNT_ID, "C001", bd("50.00"), USER_ID);
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.withdraw(USER_ID, bd("100.00")));
+        DomainException ex = assertWithdrawThrows("100.00");
         
         assertEquals(Messages.INSUFFICIENT_BALANCE, ex.getMessage());
         verify(accountRepository, never()).debit(anyLong(), any());
@@ -64,8 +71,7 @@ class AccountServiceWithdrawTest {
         Account account = new Account(ACCOUNT_ID, "C001", bd("50000.00"), USER_ID);
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.withdraw(USER_ID, bd("10000.01")));
+        DomainException ex = assertWithdrawThrows("10000.01");
         
         assertEquals(Messages.WITHDRAW_LIMIT_EXCEEDED, ex.getMessage());
         verify(accountRepository, never()).debit(anyLong(), any());
@@ -77,8 +83,7 @@ class AccountServiceWithdrawTest {
         when(accountRepository.findByUserId(USER_ID)).thenReturn(Optional.of(account));
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.of(account));
 
-        DomainException ex = assertThrows(DomainException.class, 
-            () -> service.withdraw(USER_ID, bd("-50.00")));
+        DomainException ex = assertWithdrawThrows("-50.00");
         
         assertEquals(Messages.INVALID_AMOUNT, ex.getMessage());
         

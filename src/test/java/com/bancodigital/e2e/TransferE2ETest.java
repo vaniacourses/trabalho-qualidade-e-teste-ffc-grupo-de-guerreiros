@@ -13,36 +13,32 @@ class TransferE2ETest extends AbstractE2ETest {
     private static final String BCRYPT_SENHA123 = "$2a$10$fy1UbQcOh5tYVPpfzhX5ceRqLpA1OGa7hsalIwmD2oiNXrnlbSu66";
 
     @BeforeEach
-    void seedAndLogin() throws Exception {
+    void seedAndLogin() {
         long userId = insertUser("Joao Silva", EMAIL, BCRYPT_SENHA123);
         insertAccount("C00001", new BigDecimal("500.00"), userId);
         long destUserId = insertUser("Maria Souza", "maria@email.com", BCRYPT_SENHA123);
         insertAccount("C00002", new BigDecimal("100.00"), destUserId);
-        driver.get(baseUrl + "/login");
-        driver.findElement(By.id("email")).sendKeys(EMAIL);
-        driver.findElement(By.id("password")).sendKeys("senha123");
-        driver.findElement(By.xpath("//button[text()='Entrar']")).click();
-        Thread.sleep(1000); 
+        loginAs(EMAIL, "senha123");
     }
 
     @Test
-    void transferE2EHappyPath() throws Exception {
+    void transferE2EHappyPath() {
         driver.get(baseUrl + "/transfer");
         driver.findElement(By.id("destination")).sendKeys("C00002");
         driver.findElement(By.id("amount")).sendKeys("200"); 
         driver.findElement(By.xpath("//button[text()='Transferir']")).click();
-        Thread.sleep(1500);
+        waitForAlert("success");
         String pageSource = driver.getPageSource();
         assertTrue(pageSource.contains("alert success"), "O sistema deve exibir a caixa verde de sucesso");
     }
 
     @Test
-    void transferE2ERejectsInsufficientBalance() throws Exception {
+    void transferE2ERejectsInsufficientBalance() {
         driver.get(baseUrl + "/transfer");
         driver.findElement(By.id("destination")).sendKeys("C00002");
         driver.findElement(By.id("amount")).sendKeys("600"); 
         driver.findElement(By.xpath("//button[text()='Transferir']")).click();
-        Thread.sleep(1500);
+        waitForAlert("error");
         String pageSource = driver.getPageSource();
         assertTrue(pageSource.contains("alert error"), "O sistema deve exibir a caixa vermelha informando que não tem saldo");
     }

@@ -117,6 +117,38 @@ Estratégia detalhada, padrões e cenários planejados para os outros domínios 
 
 ---
 
+## Inspeção de código com SonarQube
+
+O projeto possui uma configuração local reproduzível para gerar o relatório de
+bugs, vulnerabilidades, code smells, cobertura e complexidade.
+
+```powershell
+# Iniciar o SonarQube
+docker compose -f docker-compose.sonar.yml up -d
+
+# Gerar classes compiladas, testes e relatório JaCoCo sem executar os E2E
+mvn clean verify -DskipITs
+
+# Publicar a análise usando o token salvo no ambiente
+mvn sonar:sonar "-Dsonar.token=$env:SONAR_TOKEN"
+```
+
+O dashboard fica disponível em:
+
+```text
+http://localhost:9000/dashboard?id=bancodigital
+```
+
+O token deve ser criado em `My Account > Security` e nunca deve ser salvo no
+repositório. O procedimento completo, a seleção das classes e as regras para os
+prints estão em [docs/INSPECAO_CODIGO.md](docs/INSPECAO_CODIGO.md). O resultado
+inicial está registrado em
+[docs/RELATORIO_INSPECAO_SONAR_BASELINE.md](docs/RELATORIO_INSPECAO_SONAR_BASELINE.md)
+e o comparativo após a correção da primeira classe está em
+[docs/RELATORIO_INSPECAO_SONAR_POS_CORRECAO.md](docs/RELATORIO_INSPECAO_SONAR_POS_CORRECAO.md).
+
+---
+
 ## 📚 Documentação
 
 | Documento | Conteúdo |
@@ -124,6 +156,9 @@ Estratégia detalhada, padrões e cenários planejados para os outros domínios 
 | [docs/SETUP.md](docs/SETUP.md) | Como rodar o projeto, usuários de teste, comandos úteis e troubleshooting |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Diagrama de fluxo, camadas, schema do banco, decisões de design e segurança |
 | [docs/RESPONSABILIDADES.md](docs/RESPONSABILIDADES.md) | Membros do grupo, contribuições da Entrega 1 e distribuição da Entrega 2 |
+| [docs/INSPECAO_CODIGO.md](docs/INSPECAO_CODIGO.md) | Guia para executar o SonarQube, corrigir issues e registrar prints |
+| [docs/RELATORIO_INSPECAO_SONAR_BASELINE.md](docs/RELATORIO_INSPECAO_SONAR_BASELINE.md) | Métricas e issues encontradas antes das correções |
+| [docs/RELATORIO_INSPECAO_SONAR_POS_CORRECAO.md](docs/RELATORIO_INSPECAO_SONAR_POS_CORRECAO.md) | Comparativo e validação após corrigir a `AccountService` |
 
 ---
 

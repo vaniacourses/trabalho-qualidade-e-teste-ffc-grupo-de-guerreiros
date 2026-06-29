@@ -24,6 +24,17 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- As propriedades centralizam a identificacao do projeto e permitem
+             repetir o scan local sem duplicar parametros na linha de comando. -->
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.projectKey>bancodigital</sonar.projectKey>
+        <sonar.projectName>Banco Digital</sonar.projectName>
+        <sonar.java.binaries>target/classes</sonar.java.binaries>
+        <!-- O XML do JaCoCo permite que o SonarQube apresente cobertura de
+             linhas e arestas junto com bugs, vulnerabilidades e code smells. -->
+        <sonar.coverage.jacoco.xmlReportPaths>
+            target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencies>
@@ -99,6 +110,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <!-- A versao explicita evita que atualizacoes futuras do scanner
+                     alterem o resultado da inspecao entre os membros do grupo. -->
+                <version>5.0.0.4389</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

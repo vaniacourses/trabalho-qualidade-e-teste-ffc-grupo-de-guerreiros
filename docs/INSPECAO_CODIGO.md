@@ -109,7 +109,8 @@ Pela UI: **Projects → Create Project → Manually** → key `bancodigital`, na
 </properties>
 ```
 
-> O `sonar-maven-plugin` é puxado dinamicamente — **não precisa declarar `<plugin>`** no `<build>`.
+> O `sonar-maven-plugin` está declarado com versão fixa no `pom.xml` para que
+> todos os integrantes executem a mesma versão do scanner.
 
 ### 3.5 Rodar o scan
 
@@ -325,16 +326,21 @@ Issue pode ser **descartada com justificativa** sem perder ponto, desde que a ju
 
 ## 12. Critério de pronto
 
-- [ ] `docker-compose.sonar.yml` versionado e documentado no README.
-- [ ] `sonar-maven-plugin` configurado, comando `mvn sonar:sonar` documentado.
+- [x] `docker-compose.sonar.yml` versionado.
+- [x] `sonar-maven-plugin` e propriedades do projeto configurados no `pom.xml`.
 - [ ] Print #1 (dashboard baseline) versionado em `docs/img/`.
 - [ ] Print #2 (classe-alvo antes) versionado em `docs/img/` — **1 por membro**.
-- [ ] Issues corrigidas ou marcadas com justificativa.
+- [x] Issues da `AccountService` corrigidas e validadas por novo scan.
+- [x] Branch atualizada com `origin/main` e reanalisada com 160 testes verdes.
+- [x] Todas as issues abertas corrigidas e o hotspot restante revisado como seguro.
 - [ ] Print #3 (dashboard pós-fix) versionado.
 - [ ] Print #4 (classe-alvo depois) versionado — **1 por membro**.
-- [ ] **Quality Gate verde** na classe-alvo de cada membro (ou todas as issues remanescentes justificadas).
-- [ ] Tabela com **delta** (issues antes → depois) incluída na entrega.
-- [ ] README atualizado na seção "Próximas entregas".
+- [x] **Quality Gate verde**, sem bugs, vulnerabilidades ou code smells abertos.
+- [x] Tabela com **delta** da `AccountService` incluída na entrega.
+- [x] README atualizado com o guia de execução do SonarQube.
+
+O resultado da primeira classe corrigida esta documentado em
+[RELATORIO_INSPECAO_SONAR_POS_CORRECAO.md](RELATORIO_INSPECAO_SONAR_POS_CORRECAO.md).
 
 ---
 

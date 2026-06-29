@@ -11,9 +11,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcAccountRepository implements AccountRepository {
 
+    // A constante centraliza o nome da coluna e do parametro SQL para evitar
+    // divergencia entre o RowMapper e as consultas que usam o numero da conta.
+    private static final String ACCOUNT_NUMBER = "number";
+
     private static final RowMapper<Account> ROW_MAPPER = (rs, n) -> new Account(
             rs.getLong("id"),
-            rs.getString("number"),
+            rs.getString(ACCOUNT_NUMBER),
             rs.getBigDecimal("balance"),
             rs.getLong("user_id"));
 
@@ -35,7 +39,7 @@ public class JdbcAccountRepository implements AccountRepository {
     public Optional<Account> findByNumber(String number) {
         return jdbc.query(
                 "SELECT id, number, balance, user_id FROM accounts WHERE number = :number",
-                new MapSqlParameterSource("number", number), ROW_MAPPER)
+                new MapSqlParameterSource(ACCOUNT_NUMBER, number), ROW_MAPPER)
                 .stream().findFirst();
     }
 
@@ -70,7 +74,7 @@ public class JdbcAccountRepository implements AccountRepository {
     public void insert(String number, long userId) {
         jdbc.update("INSERT INTO accounts (number, balance, user_id) VALUES (:number, 0, :uid)",
                 new MapSqlParameterSource()
-                        .addValue("number", number)
+                        .addValue(ACCOUNT_NUMBER, number)
                         .addValue("uid", userId));
     }
 }
