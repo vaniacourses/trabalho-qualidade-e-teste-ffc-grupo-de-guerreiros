@@ -50,6 +50,9 @@ O **Banco Digital** simula as operações fundamentais de um banco para fins aca
 Stack completa, camadas, schema do banco e decisões de design em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 Relatorio completo do projeto em https://docs.google.com/document/d/124YKVq6ZCDUs38EOxJ1aFhcpEkRVjqlFrP_7vXAKWuI/edit?tab=t.0
 
+Entrega 1 
+https://docs.google.com/document/d/1_Yd4j2Ad0ycXtSZNOg9vds2kWddQDwK_a8Ir7wM65lQ/edit?usp=drivesdk
+
 ---
 
 ## 🧪 Testes
